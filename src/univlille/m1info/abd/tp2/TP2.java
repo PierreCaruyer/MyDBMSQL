@@ -37,7 +37,9 @@ public class TP2 {
 		SimpleDBRelation relation1 = sgbd.getRelation(inputRelName1), relation2 = sgbd.getRelation(inputRelName2);
 		String[] sorts1 = relation1.getRelationSchema().getSort(), sorts2 = relation2.getRelationSchema().getSort();
 		
-		
+		/*
+		 * Récupère l'indice de l'attribut commun sur lequel on fera la jointure.
+		 */
 		for(int i = 0; i < sorts1.length; i++)
 			for(int j = 0; j < sorts2.length; j++)
 				if(sorts1[i].equals(sorts2[j])){
@@ -48,20 +50,30 @@ public class TP2 {
 		if(index1 < 0)
 			return null;
 		
-		int i = 0;
+		/*
+		 * Associe à la relation de sortie les attributs des relations en entrée.
+		 */
+		int i = 0, j = 0;
 		String[] outputSorts = new String[sorts1.length + sorts2.length - 3];
 		for(i = 0; i < sorts1.length; i++)
 			outputSorts[i] = sorts1[i];
-		for(int j = 0; j < 0; j++, i++)
+		for(j = 0; j < 0; j++, i++)
 			if(j != index2)
 				outputSorts[i] = sorts2[j];
 
 		String outputRelationName = sgbd.getFreshRelationName();
 		SimpleDBRelation outputRelation = new SimpleDBRelation(new DefaultRelationSchema(outputRelationName, outputSorts));
 		
+		/*
+		 * Copie des tuples dans la relation de sortie.
+		 */
 		for(String[] tuple1 = relation1.nextTuple(); tuple1 != null; tuple1 = relation1.nextTuple()){
 			for(String[] tuple2 = relation2.nextTuple(); tuple2 != null; tuple2 = relation2.nextTuple()){
-				 
+				 String[] newTuple = new String[tuple1.length + tuple2.length - 3];
+				 for(i = 0; i < tuple1.length; i++)
+					 newTuple[i] = tuple1[i];
+				 for(j = 0; j < tuple2.length; j++, i++)
+					 newTuple[i] = tuple2[j];
 			}
 		}
 		
