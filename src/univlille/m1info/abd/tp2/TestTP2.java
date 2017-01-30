@@ -73,7 +73,6 @@ public class TestTP2 {
 		relation.addTuple(new String[]{"a1", "b1"});
 		relation.addTuple(new String[]{"a2", "b2"});
 		
-		
 		// Apply a selection operation SELECT[attrA="a1"] on this relation
 		String resultRelName = tp2.computeSelection(sgbd, "REL", "attrA", "a1");
 		

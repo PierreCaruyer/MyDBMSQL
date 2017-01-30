@@ -29,14 +29,16 @@ public class TP2 {
 			}
 		}
 		
+		projection = new SimpleDBRelation(new DefaultRelationSchema(projectionName, projectionSorts));
+		relation.switchToReadMode();
+		
 		for(String[] tuple = relation.nextTuple(); tuple != null; tuple = relation.nextTuple()){
-			String[] projectionTuple = new String[count];
-			for(int i = 0; i < count; i++){
+			String[] projectionTuple = new String[attrNames.length];
+			for(int i = 0; i < count; i++)
 				projectionTuple[i] = tuple[relationMapping.get(i)];
-			}
+			projection.addTuple(projectionTuple);
 		}
 		
-		projection = new SimpleDBRelation(new DefaultRelationSchema(projectionName, projectionSorts));
 		sgbd.addRelation(projectionName, projection);
 		
 		return projectionName;
@@ -55,6 +57,8 @@ public class TP2 {
 		
 		if(attribute < 0)
 			return null;
+		
+		relation.switchToReadMode();
 		
 		for(String[] tuple = relation.nextTuple(); tuple != null; tuple = relation.nextTuple())
 			if(tuple[attribute].equals(value))

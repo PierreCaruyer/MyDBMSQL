@@ -115,7 +115,4 @@ public class DefaultRelationSchema implements RelationSchema {
 			return false;
 		return true;
 	}
-	
-	
-	
 }
