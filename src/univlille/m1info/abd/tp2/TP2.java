@@ -1,12 +1,45 @@
 package univlille.m1info.abd.tp2;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import univlille.m1info.abd.schema.DefaultRelationSchema;
 
 public class TP2 {
 
+	private boolean contains(String str, String[] array){
+		for(String string : array)
+			if(str.equals(string))
+				return true;
+		return false;
+	}
+	
 	public String computeProjection(SimpleSGBD sgbd, String inputRelName, String[] attrNames){
+		int count = 0;
+		String projectionName = sgbd.getFreshRelationName();
+		SimpleDBRelation relation = sgbd.getRelation(inputRelName), projection;
+		String[] sorts = relation.getRelationSchema().getSort(), projectionSorts = new String[attrNames.length];
+		Map<Integer, Integer> relationMapping = new HashMap<>(); 
 		
-		return "";
+		for(int i = 0; i < sorts.length; i++){
+			if(contains(sorts[i], attrNames)){
+				projectionSorts[i] = sorts[i];
+				relationMapping.put(count, i);
+				count++;
+			}
+		}
+		
+		for(String[] tuple = relation.nextTuple(); tuple != null; tuple = relation.nextTuple()){
+			String[] projectionTuple = new String[count];
+			for(int i = 0; i < count; i++){
+				projectionTuple[i] = tuple[relationMapping.get(i)];
+			}
+		}
+		
+		projection = new SimpleDBRelation(new DefaultRelationSchema(projectionName, projectionSorts));
+		sgbd.addRelation(projectionName, projection);
+		
+		return projectionName;
 	}
 	
 	public String computeSelection(SimpleSGBD sgbd, String inputRelName, String attrName, String value){
@@ -14,8 +47,7 @@ public class TP2 {
 		String selectedRelationName = sgbd.getFreshRelationName();
 		SimpleDBRelation relation = sgbd.getRelation(inputRelName);
 		String[] sorts = relation.getRelationSchema().getSort();
-		SimpleDBRelation selectedRelation = new SimpleDBRelation(new DefaultRelationSchema(relation.getRelationSchema().getName(), sorts));
-		
+		SimpleDBRelation selectedRelation = new SimpleDBRelation(new DefaultRelationSchema(selectedRelationName, sorts));
 		
 		for(int i = 0; i < sorts.length; i++)
 			if(sorts[i].equals(attrName))
@@ -74,10 +106,13 @@ public class TP2 {
 					 newTuple[i] = tuple1[i];
 				 for(j = 0; j < tuple2.length; j++, i++)
 					 newTuple[i] = tuple2[j];
+				 outputRelation.addTuple(newTuple);
 			}
 		}
 		
-		return "";
+		sgbd.addRelation(outputRelationName, outputRelation);
+		
+		return outputRelationName;
 	}
 	
 	public void copyRelation(SimpleSGBD sgbd, String inputRelName, String outputRelName){
