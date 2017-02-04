@@ -1,3 +1,4 @@
+
 package univlille.m1info.abd.schema;
 
 import java.util.Arrays;
@@ -14,36 +15,42 @@ public class DefaultRelationSchema implements RelationSchema {
 	
 	private final String name;
 	private final String[] attributeNames;
-	private static final String NAMES_REGEX = "[a-zA-Z][a-zA-Z_]+";
+	private static final String ATTR_NAMES_REGEX = "[a-zA-Z][a-zA-Z_]+";
 	
 	public DefaultRelationSchema (String name, String ... attributeNames) {
 		
-		Set<String> usedNames = new HashSet<>(); 
-		checkCorrectName(name, usedNames);
+		Set<String> usedNames = new HashSet<>();
+		checkCorrectRelationName(name);
 		usedNames.add(name);
 		this.name = name;
-				
+
 		if (attributeNames.length == 0)
 			throw new IllegalArgumentException("A relation description should have at least one attribute");
 		
 		this.attributeNames = new String[attributeNames.length];
 		for (int i = 0; i < attributeNames.length; i++) {
 			String currentAttribute = attributeNames[i];
-			checkCorrectName(currentAttribute, usedNames);
+			checkCorrectAttributeName(currentAttribute, usedNames);
 			this.attributeNames[i] = currentAttribute;
 			usedNames.add(currentAttribute);
 		}
 	}
 	
-	private void checkCorrectName (String name, Set<String> knownNames) {
+	private void checkCorrectAttributeName (String name, Set<String> knownNames) {
 		if (name == null) 
 			throw new IllegalArgumentException("Null relation or attribute name not allowed.");
 		if (knownNames.contains(name)) 
 			throw new IllegalArgumentException("Repeated attribute or relation name not allowed: " + name);
-		if (! name.matches(NAMES_REGEX)) 
-			throw new IllegalArgumentException("Relation or attribute name should satisfy the regex " + NAMES_REGEX);
+		if (! name.matches(ATTR_NAMES_REGEX)) 
+			throw new IllegalArgumentException("Relation or attribute name should satisfy the regex " + ATTR_NAMES_REGEX);
 	}
 	
+	protected void checkCorrectRelationName (String name) {
+		if (name == null) 
+			throw new IllegalArgumentException("Null relation or attribute name not allowed.");
+		if (! name.matches(ATTR_NAMES_REGEX)) 
+			throw new IllegalArgumentException("Relation or attribute name should satisfy the regex " + ATTR_NAMES_REGEX);
+	}
 	
 	@Override
 	public String[] getSort() {

@@ -13,7 +13,7 @@ import org.junit.Test;
 public class TestTP2 {
 
 	private TP2 tp2;
-	
+
 	@Before
 	public void setUp () {
 		this.tp2 = new TP2();
@@ -72,6 +72,7 @@ public class TestTP2 {
 		SimpleDBRelation relation = sgbd.createRelation("REL", "attrA", "attrB");
 		relation.addTuple(new String[]{"a1", "b1"});
 		relation.addTuple(new String[]{"a2", "b2"});
+		
 		
 		// Apply a selection operation SELECT[attrA="a1"] on this relation
 		String resultRelName = tp2.computeSelection(sgbd, "REL", "attrA", "a1");
@@ -199,6 +200,8 @@ public class TestTP2 {
 		for (String[] el : list) {
 			s.append(Arrays.toString(el) + ",");
 		}
+		if (s.length() == 0)
+			return "[]";
 		return "[" + s.toString().substring(0, s.length()-1) + "]";
 	}
 	

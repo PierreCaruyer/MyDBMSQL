@@ -9,6 +9,7 @@ import univlille.m1info.abd.schema.DefaultRelationSchema;
 
 /** Simulation of a very simple SGBD, in which all the data is in memory.
  * The relations are accessed sequentially.
+ * This implementation does not allow concurrent access to the same relation.
  * 
  * @author Iovka Boneva
  * This document is licensed under a Creative Commons Attribution 3.0 License: http://creativecommons.org/licenses/by/3.0/
@@ -29,16 +30,16 @@ public class SimpleSGBD  {
 		return data.get(name);
 	}
 	
+	public void addRelation(String relName, SimpleDBRelation rel){
+		data.put(relName, rel);
+	}
+	
 	/** Returns a name for a new relation that is not used in this database.
 	 * 
 	 * @return
 	 */
 	public String getFreshRelationName () {
 		return TMP_REL_PREFIX + getNextFreshSuffixe();
-	}
-	
-	public void addRelation(String relationName, SimpleDBRelation relation){
-		data.put(relationName, relation);
 	}
 
 
