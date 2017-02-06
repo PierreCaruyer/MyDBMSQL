@@ -5,7 +5,7 @@ import java.util.Map;
 
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
-import univlille.m1info.abd.tp2.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
 
 public class ProjectionOperator implements PhysicalOperator{
 

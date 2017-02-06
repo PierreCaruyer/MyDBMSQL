@@ -1,4 +1,4 @@
-package univlille.m1info.abd.tp2;
+package univlille.m1info.abd.simplebd;
 
 
 import java.util.HashMap;

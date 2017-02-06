@@ -5,6 +5,8 @@ import java.util.Map;
 
 import univlille.m1info.abd.schema.DefaultRelationSchema;
 import univlille.m1info.abd.schema.RelationSchema;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleSGBD;
 
 public class TP2 {
 

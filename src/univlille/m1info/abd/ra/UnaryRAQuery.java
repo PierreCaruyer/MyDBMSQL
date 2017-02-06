@@ -1,7 +1,7 @@
 package univlille.m1info.abd.ra;
 
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.tp2.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
 
 /** An abstract class for the three unary operations of the relational algebra: projection, selection and rename.
  *  

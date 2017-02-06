@@ -3,7 +3,7 @@ package univlille.m1info.abd.phys;
 import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
-import univlille.m1info.abd.tp2.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
 
 public class SelectionOperator implements PhysicalOperator {
 

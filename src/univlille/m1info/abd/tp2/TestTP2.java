@@ -10,6 +10,9 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleSGBD;
+
 public class TestTP2 {
 
 	private TP2 tp2;

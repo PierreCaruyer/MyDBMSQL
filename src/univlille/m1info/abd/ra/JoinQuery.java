@@ -46,5 +46,4 @@ public class JoinQuery implements RAQuery {
 	public RelationSchema resultSchema() {
 		return null;
 	}
-	
 }

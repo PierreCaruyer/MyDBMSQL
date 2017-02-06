@@ -1,8 +1,8 @@
 package univlille.m1info.abd.phys;
 
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.tp2.SimpleDBRelation;
-import univlille.m1info.abd.tp2.SimpleSGBD;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleSGBD;
 
 public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 

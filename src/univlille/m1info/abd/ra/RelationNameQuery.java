@@ -1,7 +1,7 @@
 package univlille.m1info.abd.ra;
 
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.tp2.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
 
 /** An operation of the relational algebra used as a leaf.
  * Represents a relation name.

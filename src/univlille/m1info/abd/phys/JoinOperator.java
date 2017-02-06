@@ -5,16 +5,13 @@ import univlille.m1info.abd.schema.VolatileRelationSchema;
 
 public class JoinOperator implements PhysicalOperator {
 
-	private int nextTupleCalls = 0;
-	private int sortLength = 0;
-	private int joinIndex = -1;
-	private RelationSchema schema;
-	private String[] attributeNames;
+	private int i = 0, j = 0, nextTupleCalls = 0, sortLength = 0, joinIndex = -1;
+	private String[] attributeNames, rightTuple;
+	
 	private PhysicalOperator right, left;
-	private String[] rightTuple;
+	private RelationSchema schema;	
 	
 	public JoinOperator(PhysicalOperator right, PhysicalOperator left) {
-		int i = 0, j = 0;
 		this.left = left;
 		this.right = right;
 		String[] rightSorts = this.right.resultSchema().getSort(), leftSorts = this.left.resultSchema().getSort();
@@ -46,11 +43,10 @@ public class JoinOperator implements PhysicalOperator {
 	
 	@Override
 	public String[] nextTuple() {
-		boolean leftTupleIsNull = false;
-		String[] tuple = new String[sortLength], leftTuple = left.nextTuple();
+		String[] leftTuple = left.nextTuple(), tuple = null;
 
 		if(nextTupleCalls == 0 && (rightTuple == null || leftTuple == null))
-			return null;
+			return tuple;
 		
 		nextTupleCalls++;
 		
@@ -58,11 +54,17 @@ public class JoinOperator implements PhysicalOperator {
 			left.reset();
 			leftTuple = left.nextTuple();
 			rightTuple = right.nextTuple();
-			leftTupleIsNull = true;
+			if(rightTuple == null)
+				return  tuple;
 		}
 		
-		if(right == null && leftTupleIsNull)
-			return null;
+		tuple = new String[sortLength];
+		
+		for(i = 0; i < rightTuple.length; i++)
+			tuple[i] = leftTuple[i];
+		for(j = 0; j < leftTuple.length; j++)
+			if(j != joinIndex)
+				tuple[i++] = rightTuple[j];
 		
 		return tuple;
 	}

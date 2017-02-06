@@ -11,28 +11,30 @@ import univlille.m1info.abd.ra.RAQuery;
 import univlille.m1info.abd.ra.RelationNameQuery;
 import univlille.m1info.abd.ra.SelectionQuery;
 import univlille.m1info.abd.ra.UnaryRAQuery;
-import univlille.m1info.abd.tp2.SimpleDBRelation;
-import univlille.m1info.abd.tp2.SimpleSGBD;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleSGBD;
 
 public class TP3 {
 	/** Creates an operator that allows to (efficiently) execute the given operation on the given database. */
 	public PhysicalOperator getOperator(RAQuery query, SimpleSGBD sgbd) {
 		PhysicalOperator operator;
-		RelationNameQuery relationNameQuery;
-		SequentialAccessOnARelationOperator sequence;
 		
 		if(!(query instanceof ProjectionQuery) && !(query instanceof SelectionQuery) && !(query instanceof JoinQuery)) {
 			throw new UnsupportedOperationException("Unrecognized query type : " + query.getClass().getName());
 		}
 		else if(query instanceof ProjectionQuery) {
 			ProjectionQuery projection = (ProjectionQuery)query;
+			SequentialAccessOnARelationOperator sequence;
+			RelationNameQuery relationNameQuery;
 			
 			relationNameQuery = getRelationNameSubQuery(projection);
 			sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
 			operator = new ProjectionOperator(sequence, projection.getAttributeNames());
 		}
-		else if(query instanceof SelectionQuery){ 
+		else if(query instanceof SelectionQuery){
 			SelectionQuery selection = (SelectionQuery)query;
+			SequentialAccessOnARelationOperator sequence;
+			RelationNameQuery relationNameQuery;
 			
 			relationNameQuery = getRelationNameSubQuery(selection);
 			sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
@@ -61,7 +63,6 @@ public class TP3 {
 	
 	private RelationNameQuery getJoinSubQueryName(JoinQuery query, boolean left) {
 		RAQuery subQuery;
-		System.out.println("getJoinSubQueryName");
 		
 		subQuery = (left)? query.getLeftSubQuery() : query.getRightSubQuery();
 		
@@ -69,8 +70,8 @@ public class TP3 {
 			return (RelationNameQuery)subQuery;
 		else if(subQuery instanceof UnaryRAQuery)
 			return getRelationNameSubQuery((UnaryRAQuery)subQuery);
-		else
-			return getJoinSubQueryName((JoinQuery)subQuery, left);
+		
+		return getJoinSubQueryName((JoinQuery)subQuery, left);
 	}
 	
 	private SequentialAccessOnARelationOperator getSequentialAccessFromRelationName(SimpleSGBD sgbd, String relName) {
@@ -85,13 +86,11 @@ public class TP3 {
 	}
 	
 	private RelationNameQuery getRelationNameSubQuery(UnaryRAQuery query) {
-		RelationNameQuery subQuery = null;
+		RAQuery subQuery = query.getSubQuery();
 		
-		if(!(query.getSubQuery() instanceof RelationNameQuery))
-			throw new UnsupportedOperationException("Bad sub query type : " + query.getClass().getName());
-		else
-			subQuery = (RelationNameQuery)query.getSubQuery();
+		if(subQuery instanceof RelationNameQuery)
+			return (RelationNameQuery)subQuery;
 		
-		return subQuery;
+		return getRelationNameSubQuery((UnaryRAQuery)subQuery);
 	}
 }

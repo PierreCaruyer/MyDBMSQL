@@ -16,8 +16,8 @@ import univlille.m1info.abd.ra.ProjectionQuery;
 import univlille.m1info.abd.ra.RAQuery;
 import univlille.m1info.abd.ra.RelationNameQuery;
 import univlille.m1info.abd.ra.SelectionQuery;
-import univlille.m1info.abd.tp2.SimpleDBRelation;
-import univlille.m1info.abd.tp2.SimpleSGBD;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleSGBD;
 
 public class TestTP3 {
 
@@ -159,7 +159,7 @@ public class TestTP3 {
 		assertNull(operator.nextTuple());
 	}
 	
-	/*@Test
+	@Test
 	public void testCorrectJoinOfTwoTables () {
 		SimpleSGBD sgbd = new SimpleSGBD();
 		
@@ -186,7 +186,7 @@ public class TestTP3 {
 		if (! containTheSameTuples(expectedResult, obtainedResult)) {
 			fail("Wrong result. Expected " + listToString(expectedResult) + " Obtained " + listToString(obtainedResult));
 		}
-	}*/
+	}
 	
 	@Test
 	public void testJoinWithEmptyRightInput() {
