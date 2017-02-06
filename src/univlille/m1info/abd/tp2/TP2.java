@@ -61,7 +61,6 @@ public class TP2 {
 		
 		// La copie est finie, retourner le nom de la nouvelle relation
 		return newRelName;
-		
 	}
 	
 	public String computeProjection(SimpleSGBD sgbd, String inputRelName, String[] attrNames){
@@ -143,7 +142,6 @@ public class TP2 {
 		String[] outputSorts = new String[sorts1.length + sorts2.length - 1];
 		for(i = 0; i < sorts1.length; i++){
 			outputSorts[i] = sorts1[i];
-			System.out.print(sorts1[i] + " ");
 		}
 			
 		for(String str : sorts2){
