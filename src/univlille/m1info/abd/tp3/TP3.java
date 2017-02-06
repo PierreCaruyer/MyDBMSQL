@@ -56,11 +56,12 @@ public class TP3 {
 	}
 	
 	private RelationNameQuery getRightSubQueryName(JoinQuery query) {
-		return getJoinSubQueryName(query, true);
+		return getJoinSubQueryName(query, false);
 	}
 	
 	private RelationNameQuery getJoinSubQueryName(JoinQuery query, boolean left) {
 		RAQuery subQuery;
+		System.out.println("getJoinSubQueryName");
 		
 		subQuery = (left)? query.getLeftSubQuery() : query.getRightSubQuery();
 		

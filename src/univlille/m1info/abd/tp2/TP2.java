@@ -139,8 +139,11 @@ public class TP2 {
 		 */
 		int i = 0, j = 0;
 		String[] outputSorts = new String[sorts1.length + sorts2.length - 1];
-		for(i = 0; i < sorts1.length; i++)
+		for(i = 0; i < sorts1.length; i++){
 			outputSorts[i] = sorts1[i];
+			System.out.print(sorts1[i] + " ");
+		}
+			
 		for(String str : sorts2){
 			if(j != index)
 				outputSorts[i] = str;
