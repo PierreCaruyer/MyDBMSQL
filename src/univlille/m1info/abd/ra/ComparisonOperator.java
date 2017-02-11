@@ -13,5 +13,6 @@ public enum ComparisonOperator {
 		case LESS : return "<";
 		default: throw new UnsupportedOperationException("not yet implemented for " + this);
 		}
+		
 	}
 }

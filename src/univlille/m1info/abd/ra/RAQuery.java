@@ -1,6 +1,5 @@
 package univlille.m1info.abd.ra;
 
-import univlille.m1info.abd.schema.RelationSchema;
 
 /** The top-level interface representing a query expressed in the relational algebra.
  * The different classes implementing this interface allow to encode an expression of the relational algebra. 
@@ -18,9 +17,5 @@ import univlille.m1info.abd.schema.RelationSchema;
  */
 public interface RAQuery {
 	
-	public String[] nextTuple();
-	
-	public void reset();
-	
-	public RelationSchema resultSchema();
+	public void accept (RAQueryVisitor v);
 }

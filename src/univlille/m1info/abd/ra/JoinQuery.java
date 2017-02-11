@@ -1,7 +1,5 @@
 package univlille.m1info.abd.ra;
 
-import univlille.m1info.abd.schema.RelationSchema;
-
 /** The natural join operation of the relational algebra. 
  * 
  * @author Iovka Boneva
@@ -12,7 +10,7 @@ public class JoinQuery implements RAQuery {
 
 	private RAQuery leftSubQuery;
 	private RAQuery rightSubQuery;
-		
+	
 	public JoinQuery(RAQuery leftSubQuery, RAQuery rightSubQuery) {
 		this.leftSubQuery = leftSubQuery;
 		this.rightSubQuery = rightSubQuery;
@@ -32,18 +30,8 @@ public class JoinQuery implements RAQuery {
 	}
 
 	@Override
-	public String[] nextTuple() {
-		return null;
+	public void accept(RAQueryVisitor v) {
+		v.visit(this);
 	}
-
-	@Override
-	public void reset() {
-		leftSubQuery.reset();
-		rightSubQuery.reset();
-	}
-
-	@Override
-	public RelationSchema resultSchema() {
-		return null;
-	}
+	
 }

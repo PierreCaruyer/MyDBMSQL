@@ -10,7 +10,6 @@ public class RenameQuery extends UnaryRAQuery implements RAQuery {
 
 	private final String oldAttrName;
 	private final String newAttrName;
-
 	
 	public RenameQuery(RAQuery subQuery, String oldAttName, String newAttrName) {
 		super(subQuery);
@@ -30,6 +29,9 @@ public class RenameQuery extends UnaryRAQuery implements RAQuery {
 	public String toString() {
 		return String.format("RENAME[%s/%s] ()", oldAttrName, newAttrName, getSubQuery());
 	}
-	
-	
+
+	@Override
+	public void accept(RAQueryVisitor v) {
+		v.visit(this);
+	}
 }

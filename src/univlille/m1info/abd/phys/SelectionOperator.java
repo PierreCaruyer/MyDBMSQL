@@ -43,7 +43,7 @@ public class SelectionOperator implements PhysicalOperator {
 
 	@Override
 	public RelationSchema resultSchema() {
-		return relation.getRelationSchema();
+		return schema;
 	}
 
 	@Override

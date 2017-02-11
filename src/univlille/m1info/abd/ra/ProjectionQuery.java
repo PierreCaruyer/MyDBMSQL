@@ -13,7 +13,7 @@ public class ProjectionQuery extends UnaryRAQuery implements RAQuery {
 
 	private String[] attributeNames;
 	
-	public ProjectionQuery(RAQuery subQuery, String ... projectedAttributesNames) {
+	public ProjectionQuery(RAQuery subQuery, String... projectedAttributesNames) {
 		super(subQuery);
 		if (projectedAttributesNames.length == 0)
 			throw new IllegalArgumentException("Projection on 0 attributes not allowed");
@@ -28,8 +28,9 @@ public class ProjectionQuery extends UnaryRAQuery implements RAQuery {
 	public String toString() {
 		return String.format("PROJECT%s(%s)", Arrays.toString(attributeNames), getSubQuery());
 	}
-	
-	public String[] getAttributeNames() {
-		return attributeNames;
+
+	@Override
+	public void accept(RAQueryVisitor v) {
+		v.visit(this);
 	}
 }

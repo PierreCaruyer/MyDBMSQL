@@ -5,7 +5,7 @@ import univlille.m1info.abd.schema.VolatileRelationSchema;
 
 public class JoinOperator implements PhysicalOperator {
 
-	private int i = 0, j = 0, nextTupleCalls = 0, sortLength = 0, joinIndex = -1;
+	private int i = 0, j = 0, sortLength = 0, rightJoinIndex = -1;
 	private String[] attributeNames, leftTuple;
 	
 	private PhysicalOperator right, left;
@@ -19,10 +19,10 @@ public class JoinOperator implements PhysicalOperator {
 		/*
 		 * Récupère l'indice de l'attribut commun sur lequel on fera la jointure.
 		 */
-		for(i = 0; i < leftSorts.length && joinIndex < 0; i++)
-			for(j = 0; j < rightSorts.length && joinIndex < 0; j++)
+		for(i = 0; i < leftSorts.length && rightJoinIndex < 0; i++)
+			for(j = 0; j < rightSorts.length && rightJoinIndex < 0; j++)
 				if(rightSorts[j].equals(leftSorts[i]))
-					joinIndex = j;
+					rightJoinIndex = j;
 
 		/*
 		 * Associe à la relation de sortie les attributs des relations en entrée.
@@ -32,7 +32,7 @@ public class JoinOperator implements PhysicalOperator {
 		for(i = 0; i < leftSorts.length; i++)
 			attributeNames[i] = leftSorts[i];
 		for(j = 0; j < rightSorts.length; j++)
-			if(j != joinIndex)
+			if(j != rightJoinIndex)
 				attributeNames[i++] = rightSorts[j];
 			
 		//Initialising rightTuple to a defaultValue
@@ -43,30 +43,28 @@ public class JoinOperator implements PhysicalOperator {
 	
 	@Override
 	public String[] nextTuple() {
-		String[] rightTuple = right.nextTuple(), tuple = null;
+		String[] rightTuple = right.nextTuple();
 
-		if((joinIndex < 0) || (nextTupleCalls == 0 && (rightTuple == null || leftTuple == null)))
-			return null;
-		
-		nextTupleCalls++;
-		
 		if(rightTuple == null){
-			return null;
-			/*right.reset();
-			rightTuple = right.nextTuple();
+			right.reset();
+			leftTuple = left.nextTuple();
 			if(leftTuple == null)
-				return  null;*/
+				return null;
+			rightTuple = right.nextTuple();
 		}
 		
-		tuple = new String[sortLength];
+		if(leftTuple == null || rightTuple == null)
+			return null;
+		
+		String[] tuple = new String[sortLength];
 		
 		for(i = 0; i < leftTuple.length; i++)
 			tuple[i] = leftTuple[i];
 		for(j = 0; j < rightTuple.length; j++)
-			if(j != joinIndex)
+			if(j != rightJoinIndex)
 				tuple[i] = rightTuple[j];
 		
-		return (tuple[joinIndex].equals(rightTuple[joinIndex]))? tuple : null;
+		return (tuple[rightJoinIndex].equals(rightTuple[rightJoinIndex]))? tuple : null;
 	}
 
 	@Override

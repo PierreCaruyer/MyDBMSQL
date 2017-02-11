@@ -36,4 +36,9 @@ public class SelectionQuery extends UnaryRAQuery implements RAQuery {
 	public String toString() {
 		return String.format("SELECT[%s%s%s](%s)", attrName, operator.prettyString(), constantValue, getSubQuery());
 	}
+
+	@Override
+	public void accept(RAQueryVisitor v) {
+		v.visit(this);
+	}
 }

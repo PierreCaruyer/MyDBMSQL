@@ -1,8 +1,5 @@
 package univlille.m1info.abd.ra;
 
-import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.simplebd.SimpleDBRelation;
-
 /** An operation of the relational algebra used as a leaf.
  * Represents a relation name.
  * 
@@ -13,7 +10,6 @@ import univlille.m1info.abd.simplebd.SimpleDBRelation;
 public class RelationNameQuery implements RAQuery {
 
 	private final String relName;
-	private SimpleDBRelation relation;
 	
 	public RelationNameQuery(String relationName) {
 		this.relName = relationName;
@@ -29,17 +25,7 @@ public class RelationNameQuery implements RAQuery {
 	}
 
 	@Override
-	public String[] nextTuple() {
-		return relation.nextTuple();
-	}
-
-	@Override
-	public void reset() {
-		relation.switchToReadMode();
-	}
-
-	@Override
-	public RelationSchema resultSchema() {
-		return relation.getRelationSchema();
+	public void accept(RAQueryVisitor v) {
+		v.visit(this);
 	}
 }

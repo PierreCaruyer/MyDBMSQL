@@ -3,12 +3,14 @@ package univlille.m1info.abd.tp3;
 import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.PhysicalOperator;
 import univlille.m1info.abd.phys.ProjectionOperator;
+import univlille.m1info.abd.phys.RenameOperator;
 import univlille.m1info.abd.phys.SelectionOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
 import univlille.m1info.abd.ra.JoinQuery;
 import univlille.m1info.abd.ra.ProjectionQuery;
 import univlille.m1info.abd.ra.RAQuery;
 import univlille.m1info.abd.ra.RelationNameQuery;
+import univlille.m1info.abd.ra.RenameQuery;
 import univlille.m1info.abd.ra.SelectionQuery;
 import univlille.m1info.abd.ra.UnaryRAQuery;
 import univlille.m1info.abd.simplebd.SimpleDBRelation;
@@ -19,7 +21,7 @@ public class TP3 {
 	public PhysicalOperator getOperator(RAQuery query, SimpleSGBD sgbd) {
 		PhysicalOperator operator;
 		
-		if(!(query instanceof ProjectionQuery) && !(query instanceof SelectionQuery) && !(query instanceof JoinQuery)) {
+		if(!(query instanceof ProjectionQuery) && !(query instanceof SelectionQuery) && !(query instanceof JoinQuery) && !(query instanceof RenameQuery)) {
 			throw new UnsupportedOperationException("Unrecognized query type : " + query.getClass().getName());
 		}
 		else if(query instanceof ProjectionQuery) {
@@ -29,9 +31,9 @@ public class TP3 {
 			
 			relationNameQuery = getRelationNameSubQuery(projection);
 			sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
-			operator = new ProjectionOperator(sequence, projection.getAttributeNames());
+			operator = new ProjectionOperator(sequence, projection.getProjectedAttributesNames());
 		}
-		else if(query instanceof SelectionQuery){
+		else if(query instanceof SelectionQuery) {
 			SelectionQuery selection = (SelectionQuery)query;
 			SequentialAccessOnARelationOperator sequence;
 			RelationNameQuery relationNameQuery;
@@ -39,6 +41,15 @@ public class TP3 {
 			relationNameQuery = getRelationNameSubQuery(selection);
 			sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
 			operator = new SelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator());
+		}
+		else if(query instanceof RenameQuery) {
+			RenameQuery rename = (RenameQuery)query;
+			SequentialAccessOnARelationOperator sequence;
+			RelationNameQuery relationNameQuery;
+			
+			relationNameQuery = getRelationNameSubQuery(rename);
+			sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
+			operator = new RenameOperator(sequence, rename.getOldAttrName(), rename.getNewAttrName());
 		}
 		else {
 			JoinQuery join = (JoinQuery)query;
