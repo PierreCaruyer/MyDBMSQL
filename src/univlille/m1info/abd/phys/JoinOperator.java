@@ -17,7 +17,7 @@ public class JoinOperator implements PhysicalOperator {
 		String[] rightSorts = this.right.resultSchema().getSort(), leftSorts = this.left.resultSchema().getSort();
 
 		/*
-		 * Récupère l'indice de l'attribut commun sur lequel on fera la jointure.
+		 * Gets the index of the common attribute on which the join will be computed
 		 */
 		for(i = 0; i < leftSorts.length && rightJoinIndex < 0; i++)
 			for(j = 0; j < rightSorts.length && rightJoinIndex < 0; j++)
@@ -25,7 +25,7 @@ public class JoinOperator implements PhysicalOperator {
 					rightJoinIndex = j;
 
 		/*
-		 * Associe à la relation de sortie les attributs des relations en entrée.
+		 * Gives the output relation the attributes of both input relations
 		 */
 		sortLength = rightSorts.length + leftSorts.length - 1;
 		attributeNames = new String[sortLength];
@@ -35,24 +35,32 @@ public class JoinOperator implements PhysicalOperator {
 			if(j != rightJoinIndex)
 				attributeNames[i++] = rightSorts[j];
 			
-		//Initialising rightTuple to a defaultValue
-		leftTuple = left.nextTuple();
+		leftTuple = left.nextTuple(); //Initialising leftTuple to a default value
 		
 		schema = new VolatileRelationSchema(attributeNames);
 	}
 	
 	@Override
 	public String[] nextTuple() {
+		/*
+		 * For each, left tuple, attempt to find a non-null right tuple.
+		 */
 		String[] rightTuple = right.nextTuple();
 
+		/*
+		 * If right tuple is null, then the right physical operator must be rewinded
+		 * so we can try to join the tuples of the right physical with the next tuple 
+		 * of the left physical operator. 
+		 */
 		if(rightTuple == null){
 			right.reset();
 			leftTuple = left.nextTuple();
-			if(leftTuple == null)
-				return null;
 			rightTuple = right.nextTuple();
 		}
 		
+		/*
+		 * If left or right tuple is null then it means all combination must have been tested.
+		 */
 		if(leftTuple == null || rightTuple == null)
 			return null;
 		

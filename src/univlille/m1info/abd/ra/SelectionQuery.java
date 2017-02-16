@@ -9,7 +9,7 @@ package univlille.m1info.abd.ra;
  */
 public class SelectionQuery extends UnaryRAQuery implements RAQuery {
 
-	private final String attrName;
+	private String attrName;
 	private final String constantValue;
 	private final ComparisonOperator operator;
 	
@@ -22,6 +22,10 @@ public class SelectionQuery extends UnaryRAQuery implements RAQuery {
 
 	public String getAttributeName() {
 		return attrName;
+	}
+	
+	public void setAttributeName(String attribute) {
+		attrName = attribute;
 	}
 
 	public String getConstantValue() {
