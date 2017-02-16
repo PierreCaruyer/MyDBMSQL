@@ -24,6 +24,14 @@ public class JoinQuery implements RAQuery {
 		return rightSubQuery;
 	}
 
+	public void setRightSubQuery(RAQuery right) {
+		rightSubQuery = right;
+	}
+	
+	public void setLeftSubQuery(RAQuery left) {
+		leftSubQuery = left;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("JOIN(%s, %s)", leftSubQuery, rightSubQuery);

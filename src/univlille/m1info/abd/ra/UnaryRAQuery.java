@@ -8,7 +8,7 @@ package univlille.m1info.abd.ra;
  */
 public abstract class UnaryRAQuery implements RAQuery {
 
-	private final RAQuery subQuery;
+	private RAQuery subQuery;
 	
 	public UnaryRAQuery(RAQuery subQuery) {
 		this.subQuery = subQuery;

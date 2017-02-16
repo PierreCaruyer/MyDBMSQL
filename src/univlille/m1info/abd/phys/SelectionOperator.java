@@ -35,10 +35,33 @@ public class SelectionOperator implements PhysicalOperator {
 	public String[] nextTuple() {
 		String[] tuple = operator.nextTuple();
 
-		while(tuple != null && !tuple[attributeIndex].equals(value))
+		while(tuple != null && !computeComparison(tuple[attributeIndex], value))
 			tuple = operator.nextTuple();
 
 		return tuple;
+	}
+	
+	/**
+	 * Compares two values with the given comparison operator
+	 * @param value1
+	 * @param value2
+	 * @return comparison test between the two values
+	 */
+	private boolean computeComparison(String value1, String value2) {
+		int comparison = value1.compareTo(value2);
+
+		if(comparator == ComparisonOperator.EQUAL)
+			return (comparison == 0);
+		else if(comparator == ComparisonOperator.GREATER)
+			return (comparison > 0)? true : false;
+		else if(comparator == ComparisonOperator.GREATER_OR_EQUAL)
+			return (comparison >= 0)? true : false;
+		else if(comparator == ComparisonOperator.LESS)
+			return (comparison < 0)? true : false;
+		else if(comparator == ComparisonOperator.LESS_OR_EQUAL)
+			return (comparison <= 0)? true : false;
+		else
+			return false;
 	}
 
 	@Override
