@@ -75,6 +75,12 @@ public class TP4 {
 		if(currentOptimNode instanceof JoinQuery) {
 			
 		}
+		else if(currentOptimNode instanceof RelationNameQuery) {
+			
+		}
+		else { //UnaryRAQuery
+			
+		}
 		/*if(currentNode == root) { //skipSelection returned root therefore root isn't an instance of UnaryRAQuery and should be treated independantly
 			
 		}

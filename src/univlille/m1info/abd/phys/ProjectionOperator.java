@@ -1,7 +1,7 @@
 package univlille.m1info.abd.phys;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
@@ -12,16 +12,14 @@ public class ProjectionOperator implements PhysicalOperator{
 	private PhysicalOperator operator;
 	private String[] attributeNames;
 	private SimpleDBRelation relation;
-	private Map<Integer, Integer> attributesMapping;
-//	private ArrayList<Integer> attributesMapping;
+	private List<Integer> attributesMapping;
 	private RelationSchema schema;
-	private int count = 0;
 	
 	public ProjectionOperator(PhysicalOperator operator, String ... attrNames) {
 		this.operator = operator;
 		this.attributeNames = attrNames;
 
-		attributesMapping = new HashMap<>();
+		attributesMapping = new ArrayList<>();
 		schema = new VolatileRelationSchema(attributeNames);
 		relation = new SimpleDBRelation(schema);
 		
@@ -30,24 +28,9 @@ public class ProjectionOperator implements PhysicalOperator{
 		for(int i = 0; i < sorts.length; i++){
 			if(contains(sorts[i], attrNames)){
 				this.attributeNames[i] = sorts[i];
-				attributesMapping.put(count, i);
-				count++;
+				attributesMapping.add(i);
 			}
 		}
-//		this.operator = operator;
-//		this.attributeNames = attrNames;
-//		
-//		schema = new VolatileRelationSchema(attrNames);
-//		relation = new SimpleDBRelation(schema);
-//		
-//		String[] sorts = operator.resultSchema().getSort();
-//		
-//		int i = 0;
-//		for ( String s : sorts ) {
-//			if ( Arrays.asList(attrNames).contains(s) )
-//				attributesMapping.add(i);
-//			i++;
-//		}
 	}
 	
 	@Override
@@ -57,20 +40,10 @@ public class ProjectionOperator implements PhysicalOperator{
  		if(currentTuple == null)
  			return null;
  		
- 		for(int i = 0; i < count; i++)
+ 		for(int i = 0; i < attributesMapping.size(); i++)
 			tuple[i] = currentTuple[attributesMapping.get(i)];
  		
  		return tuple;
-// 		ArrayList<String> tuple = new ArrayList<String>();
-//		String[] currentTuple = operator.nextTuple();
-//		
-//		if ( currentTuple == null ) return null;
-//		
-//		for ( String c : currentTuple ) {
-//			tuple.add(c);
-//		}
-//		
-//		return tuple.toArray(new String[tuple.size()]);
 	}
 
 	@Override
