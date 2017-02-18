@@ -6,36 +6,37 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class Visitor implements RAQueryVisitor{
 
-	private Deque<RAQuery> selectionCollector;
+	private Deque<SelectionQuery> selectionCollector;
+	private Iterator<SelectionQuery> selectionIterator;
 	private Deque<RAQuery> queryTree;
-	private Iterator<RAQuery> iterator;
+	private Iterator<RAQuery> queryIterator;
 	
 	public Visitor() {
 		queryTree = new ConcurrentLinkedDeque<>();
 		selectionCollector = new ConcurrentLinkedDeque<>();
-		iterator = null;
 	}
 	
-	@Override
 	public void switchToReadMode() {
-		iterator = queryTree.iterator();
+		queryIterator = queryTree.iterator();
+		selectionIterator = selectionCollector.iterator();
 	}
 	
-	@Override
 	public RAQuery nextQuery() {
-		return (iterator.hasNext())? iterator.next() : null;
+		return (queryIterator.hasNext())? queryIterator.next() : null;
+	}
+	
+	public SelectionQuery nextSelection() {
+		return (selectionIterator.hasNext())? selectionIterator.next() : null;
 	}
 	
 	@Override
 	public void visit(SelectionQuery q) {
 		q.getSubQuery().accept(this);
 		RAQuery sub = q.getSubQuery();
-		RenameQuery rnq = null;
 		if(sub instanceof RenameQuery) {
-			rnq = (RenameQuery)sub;
+			RenameQuery rnq = (RenameQuery)sub;
 			q.setAttributeName(rnq.getOldAttrName());
 		}
-		rnq = null;
 		selectionCollector.add(q);
 		queryTree.push(q);
 	}
