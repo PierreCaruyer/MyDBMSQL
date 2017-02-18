@@ -13,6 +13,7 @@ public class ProjectionOperator implements PhysicalOperator{
 	private String[] attributeNames;
 	private SimpleDBRelation relation;
 	private Map<Integer, Integer> attributesMapping;
+//	private ArrayList<Integer> attributesMapping;
 	private RelationSchema schema;
 	private int count = 0;
 	
@@ -33,6 +34,20 @@ public class ProjectionOperator implements PhysicalOperator{
 				count++;
 			}
 		}
+//		this.operator = operator;
+//		this.attributeNames = attrNames;
+//		
+//		schema = new VolatileRelationSchema(attrNames);
+//		relation = new SimpleDBRelation(schema);
+//		
+//		String[] sorts = operator.resultSchema().getSort();
+//		
+//		int i = 0;
+//		for ( String s : sorts ) {
+//			if ( Arrays.asList(attrNames).contains(s) )
+//				attributesMapping.add(i);
+//			i++;
+//		}
 	}
 	
 	@Override
@@ -46,6 +61,16 @@ public class ProjectionOperator implements PhysicalOperator{
 			tuple[i] = currentTuple[attributesMapping.get(i)];
  		
  		return tuple;
+// 		ArrayList<String> tuple = new ArrayList<String>();
+//		String[] currentTuple = operator.nextTuple();
+//		
+//		if ( currentTuple == null ) return null;
+//		
+//		for ( String c : currentTuple ) {
+//			tuple.add(c);
+//		}
+//		
+//		return tuple.toArray(new String[tuple.size()]);
 	}
 
 	@Override
