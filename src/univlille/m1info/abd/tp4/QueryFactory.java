@@ -38,4 +38,31 @@ public class QueryFactory {
 		
 		return copy;
 	}
+	
+	public static RAQuery copyCustomQuery(RAQuery q, RAQuery leftSubQuery, RAQuery rightSubQuery) {
+		RAQuery copy = null;
+		
+		if(q instanceof SelectionQuery) {
+			SelectionQuery tmp = (SelectionQuery)q;
+			copy = new SelectionQuery(leftSubQuery, tmp.getAttributeName(), tmp.getComparisonOperator(), tmp.getConstantValue());
+		}
+		else if(q instanceof ProjectionQuery) {
+			ProjectionQuery tmp = (ProjectionQuery)q;
+			copy = new ProjectionQuery(leftSubQuery, tmp.getProjectedAttributesNames());
+		}
+		else if(q instanceof JoinQuery) {
+			JoinQuery tmp = (JoinQuery)q;
+			copy = new JoinQuery(leftSubQuery, rightSubQuery);
+		}
+		else if(q instanceof RenameQuery) {
+			RenameQuery tmp = (RenameQuery)q;
+			copy = new RenameQuery(leftSubQuery, tmp.getOldAttrName(), tmp.getNewAttrName());
+		}
+		else { //instance of RelationNameQuery
+			RelationNameQuery tmp = (RelationNameQuery)q;
+			copy = new RelationNameQuery(tmp.getRelationName());
+		}
+		
+		return copy;
+	}
 }
