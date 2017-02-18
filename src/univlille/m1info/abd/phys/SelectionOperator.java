@@ -27,7 +27,7 @@ public class SelectionOperator implements PhysicalOperator {
 		relation = new SimpleDBRelation(schema);
 		
 		for(int i = 0; i < sorts.length && attributeIndex < 0; i++)
-			if(sorts[i].equals(attrName))
+			if(sorts[i].equals(attributeName))
 				attributeIndex = i;
 	}
 
