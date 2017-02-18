@@ -9,7 +9,7 @@ public class SelectionOperator implements PhysicalOperator {
 
 	private ComparisonOperator comparator;
 	private PhysicalOperator operator;
-	private String value;
+	private String constantValue;
 	private String attributeName;
 	private int attributeIndex = -1;
 	private SimpleDBRelation relation;
@@ -18,14 +18,14 @@ public class SelectionOperator implements PhysicalOperator {
 	public SelectionOperator(PhysicalOperator operator, String attrName, String constantValue, ComparisonOperator comparator) {
 		this.operator = operator;
 		this.attributeName = attrName;
-		this.value = constantValue;
+		this.constantValue = constantValue;
 		this.comparator = comparator;
-
-		schema = new VolatileRelationSchema(new String[]{attributeName});
-		relation = new SimpleDBRelation(schema);
-
+		
 		String[] sorts = operator.resultSchema().getSort();
-
+		
+		schema = new VolatileRelationSchema(sorts);
+		relation = new SimpleDBRelation(schema);
+		
 		for(int i = 0; i < sorts.length && attributeIndex < 0; i++)
 			if(sorts[i].equals(attrName))
 				attributeIndex = i;
@@ -35,7 +35,7 @@ public class SelectionOperator implements PhysicalOperator {
 	public String[] nextTuple() {
 		String[] tuple = operator.nextTuple();
 
-		while(tuple != null && !computeComparison(tuple[attributeIndex], value))
+		while(tuple != null && !computeComparison(tuple[attributeIndex], constantValue))
 			tuple = operator.nextTuple();
 
 		return tuple;
