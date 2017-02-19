@@ -1,43 +1,42 @@
 package univlille.m1info.abd.phys;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
 public class JoinOperator implements PhysicalOperator {
 
-	private int i = 0, j = 0, sortLength = 0, rightJoinIndex = -1;
-	private String[] attributeNames, leftTuple;
+	private String[] leftTuple;
 	
 	private PhysicalOperator right, left;
-	private RelationSchema schema;	
+	private RelationSchema schema;
+	private RelationSchema schemaLeft;
+	private RelationSchema schemaRight;
+	private ArrayList<String> joinSorts;
+	String[] leftSorts;
+	String[] rightSorts;
 	
 	public JoinOperator(PhysicalOperator right, PhysicalOperator left) {
 		this.left = left;
 		this.right = right;
-		String[] rightSorts = this.right.resultSchema().getSort(), leftSorts = this.left.resultSchema().getSort();
-
-		/*
-		 * Gets the index of the common attribute on which the join will be computed
-		 */
-		for(i = 0; i < leftSorts.length && rightJoinIndex < 0; i++)
-			for(j = 0; j < rightSorts.length && rightJoinIndex < 0; j++)
-				if(rightSorts[j].equals(leftSorts[i]))
-					rightJoinIndex = j;
+		schemaLeft = left.resultSchema();
+		schemaRight = right.resultSchema();
+		leftSorts = schemaLeft.getSort();
+		rightSorts = schemaRight.getSort();
 
 		/*
 		 * Gives the output relation the attributes of both input relations
 		 */
-		sortLength = rightSorts.length + leftSorts.length - 1;
-		attributeNames = new String[sortLength];
-		for(i = 0; i < leftSorts.length; i++)
-			attributeNames[i] = leftSorts[i];
-		for(j = 0; j < rightSorts.length; j++)
-			if(j != rightJoinIndex)
-				attributeNames[i++] = rightSorts[j];
+		joinSorts = new ArrayList<String>(Arrays.asList(leftSorts));
+		for ( String attributeName : rightSorts ) {
+			if ( !joinSorts.contains(attributeName)) joinSorts.add(attributeName);
+		}
+
+		schema = new VolatileRelationSchema(joinSorts.toArray(new String[joinSorts.size()]));
 			
 		leftTuple = left.nextTuple(); //Initialising leftTuple to a default value
-		
-		schema = new VolatileRelationSchema(attributeNames);
 	}
 	
 	@Override
@@ -63,16 +62,37 @@ public class JoinOperator implements PhysicalOperator {
 		 */
 		if(leftTuple == null || rightTuple == null)
 			return null;
-		
-		String[] tuple = new String[sortLength];
-		
-		for(i = 0; i < leftTuple.length; i++)
-			tuple[i] = leftTuple[i];
-		for(j = 0; j < rightTuple.length; j++)
-			if(j != rightJoinIndex)
-				tuple[i] = rightTuple[j];
-		
-		return (tuple[rightJoinIndex].equals(rightTuple[rightJoinIndex]))? tuple : null;
+			
+		// Find the common attributes between left and right
+		ArrayList<String> inter = new ArrayList<String>();
+		for ( String attr : rightSorts ) {
+			if ( Arrays.asList(leftSorts).contains(attr) ) inter.add(attr); 
+		}
+		// Check the joint
+		boolean isJoin = true;
+		for ( String attr : inter ) {
+			String value1 = schemaLeft.getAttributeValue(leftTuple, attr);
+			String value2 = schemaRight.getAttributeValue(rightTuple, attr);
+			if ( value1 != value2 ) {
+				isJoin = false;
+				break;
+			}
+		}
+		// Prepare the next tuple
+		ArrayList<String> next_tuple = new ArrayList<String>(joinSorts.size());
+		next_tuple.addAll(Arrays.asList(leftTuple));
+		// If no junction return null
+		if ( !isJoin ) return null;
+		else {
+			for ( String attr : rightSorts ) {
+				String value = null;
+				if ( !Arrays.asList(leftSorts).contains(attr) ) {
+					value = schemaRight.getAttributeValue(rightTuple, attr);
+					next_tuple.add(value);
+				}
+			}
+		}
+		return next_tuple.toArray(new String[joinSorts.size()]);
 	}
 
 	@Override
