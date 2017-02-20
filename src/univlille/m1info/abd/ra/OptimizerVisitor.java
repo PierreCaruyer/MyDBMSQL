@@ -2,7 +2,6 @@ package univlille.m1info.abd.ra;
 
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -18,10 +17,8 @@ public class OptimizerVisitor implements RAQueryVisitor{
 
 	private SimpleSGBD sgbd = null;
 	private Deque<SelectionQuery> selectionCollector = null;
-	private Iterator<SelectionQuery> selectionIterator = null;
-	private RAQuery topQuery = null;
-	private RAQuery leftQuery = null, rightQuery = null; //Used to describe join queries' subqueries
-	private boolean leftQueryEnabled = false, rightQueryEnabled = false;
+	private RAQuery topQuery = null, tmpQuery = null;
+	private SelectionQuery firstQuery = null;
 
 	public OptimizerVisitor(SimpleSGBD sgbd) {
 		selectionCollector = new ConcurrentLinkedDeque<>();
@@ -29,72 +26,51 @@ public class OptimizerVisitor implements RAQueryVisitor{
 	}
 
 	private void switchToReadMode() {
-		selectionIterator = selectionCollector.iterator();
+		firstQuery = selectionCollector.peekFirst();
 	}
-
+	
 	private SelectionQuery nextQuery() {
-		return (selectionIterator.hasNext())? selectionIterator.next() : null;
+		SelectionQuery temporary = selectionCollector.peekFirst();
+		
+		if(temporary == null || temporary == firstQuery)
+			return null;
+		selectionCollector.removeFirst();
+		selectionCollector.addLast(temporary);
+		
+		return temporary;
 	}
-
-	/**
-	 * Stacks all selection queries to re-use them later on
-	 */
+	
 	@Override
 	public void visit(SelectionQuery q) {
 		skipSelectionsFrom(q).accept(this);
-		System.out.println(q);
 	}
 
 	@Override
 	public void visit(ProjectionQuery q) {
 		q.getSubQuery().accept(this);
-		System.out.println(q);
-		if(rightQueryEnabled) { //right branch of the sub-tree
-			rightQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
-			rightQueryEnabled = false;
-		}
-		else if(leftQueryEnabled) { //left branch of the sub-tree
-			leftQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
-			leftQueryEnabled = false;
-		}
-		else {
-			topQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
-		}
+		if(tmpQuery != null)
+			tmpQuery = topQuery;
+		topQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
 	}
 
 	@Override
 	public void visit(JoinQuery q) {
-		//leftQuery will take the role of topQuery
-		leftQueryEnabled = true;
 		q.getLeftSubQuery().accept(this);
-		
-		//rightQuery will take the role of topQuery
-		rightQueryEnabled = true;
 		q.getRightSubQuery().accept(this);
-		System.out.println(q);
-		topQuery = QueryFactory.copyCustomQuery(q, leftQuery, rightQuery);
+
+		topQuery = QueryFactory.copyCustomQuery(q, topQuery, tmpQuery);
 	}
 
 	@Override
 	public void visit(RenameQuery q) {
 		q.getSubQuery().accept(this);
-		System.out.println(q);
-		if(rightQueryEnabled) { //right branch of the sub-tree
-			rightQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
-			rightQueryEnabled = false;
-		}
-		else if(leftQueryEnabled) { //left branch of the sub-tree
-			leftQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
-			leftQueryEnabled = false;
-		}
-		else {
-			topQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
-		}
+		if(tmpQuery != null)
+			tmpQuery = topQuery;
+		topQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
 	}
 
 	@Override
 	public void visit(RelationNameQuery q) {
-		System.out.println(q);
 		SelectionQuery tmp = null;
 		SimpleDBRelation relation = sgbd.getRelation(q.getRelationName());
 		List<SelectionQuery> selectionList = new ArrayList<>();
@@ -105,16 +81,16 @@ public class OptimizerVisitor implements RAQueryVisitor{
 
 		if(selectionList.isEmpty()) {
 			topQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
-			return;
 		}
-		
-		topQuery = QueryFactory.copyCustomQuery(selectionList.get(0), q, null);
+		else {
+			topQuery = QueryFactory.copyCustomQuery(selectionList.get(0), q, null);
 
-		for(int i = 1; i < selectionList.size(); i++){ //Filter selection queries
-			SelectionQuery selection = selectionList.get(i);
-			String[] sorts = relation.getRelationSchema().getSort();
-			if(arrayContains(sorts, selection.getAttributeName())) {
-				topQuery = QueryFactory.copyCustomQuery(selectionList.get(i), topQuery, null);
+			for(int i = 1; i < selectionList.size(); i++){ //Filter selection queries
+				SelectionQuery selection = selectionList.get(i);
+				String[] sorts = relation.getRelationSchema().getSort();
+				if(arrayContains(sorts, selection.getAttributeName())) {
+					topQuery = QueryFactory.copyCustomQuery(selectionList.get(i), topQuery, null);
+				}
 			}
 		}
 	}
@@ -129,7 +105,7 @@ public class OptimizerVisitor implements RAQueryVisitor{
 		UnaryRAQuery currentUnary = entryPoint;
 
 		while(currentUnary instanceof SelectionQuery) {
-			selectionCollector.push((SelectionQuery)currentUnary);
+			selectionCollector.addLast((SelectionQuery)currentUnary);
 			currentSub = currentUnary.getSubQuery();
 			if(currentSub instanceof UnaryRAQuery)
 				currentUnary = (UnaryRAQuery)currentSub;
