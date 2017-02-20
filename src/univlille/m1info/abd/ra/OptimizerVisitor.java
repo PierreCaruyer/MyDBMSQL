@@ -41,19 +41,19 @@ public class OptimizerVisitor implements RAQueryVisitor{
 	 */
 	@Override
 	public void visit(SelectionQuery q) {
-		System.out.println(q);
 		skipSelectionsFrom(q).accept(this);
+		System.out.println(q);
 	}
 
 	@Override
 	public void visit(ProjectionQuery q) {
-		System.out.println(q);
 		q.getSubQuery().accept(this);
-		if(rightQueryEnabled) {
+		System.out.println(q);
+		if(rightQueryEnabled) { //right branch of the sub-tree
 			rightQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
 			rightQueryEnabled = false;
 		}
-		else if(leftQueryEnabled) {
+		else if(leftQueryEnabled) { //left branch of the sub-tree
 			leftQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
 			leftQueryEnabled = false;
 		}
@@ -64,7 +64,6 @@ public class OptimizerVisitor implements RAQueryVisitor{
 
 	@Override
 	public void visit(JoinQuery q) {
-		System.out.println(q);
 		//leftQuery will take the role of topQuery
 		leftQueryEnabled = true;
 		q.getLeftSubQuery().accept(this);
@@ -72,19 +71,19 @@ public class OptimizerVisitor implements RAQueryVisitor{
 		//rightQuery will take the role of topQuery
 		rightQueryEnabled = true;
 		q.getRightSubQuery().accept(this);
-		
+		System.out.println(q);
 		topQuery = QueryFactory.copyCustomQuery(q, leftQuery, rightQuery);
 	}
 
 	@Override
 	public void visit(RenameQuery q) {
-		System.out.println(q);
 		q.getSubQuery().accept(this);
-		if(rightQueryEnabled) {
+		System.out.println(q);
+		if(rightQueryEnabled) { //right branch of the sub-tree
 			rightQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
 			rightQueryEnabled = false;
 		}
-		else if(leftQueryEnabled) {
+		else if(leftQueryEnabled) { //left branch of the sub-tree
 			leftQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
 			leftQueryEnabled = false;
 		}
@@ -96,7 +95,7 @@ public class OptimizerVisitor implements RAQueryVisitor{
 	@Override
 	public void visit(RelationNameQuery q) {
 		System.out.println(q);
-		SelectionQuery tmp;
+		SelectionQuery tmp = null;
 		SimpleDBRelation relation = sgbd.getRelation(q.getRelationName());
 		List<SelectionQuery> selectionList = new ArrayList<>();
 
@@ -104,6 +103,11 @@ public class OptimizerVisitor implements RAQueryVisitor{
 		while((tmp = nextQuery()) != null)
 			selectionList.add(tmp);
 
+		if(selectionList.isEmpty()) {
+			topQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
+			return;
+		}
+		
 		topQuery = QueryFactory.copyCustomQuery(selectionList.get(0), q, null);
 
 		for(int i = 1; i < selectionList.size(); i++){ //Filter selection queries
@@ -129,6 +133,7 @@ public class OptimizerVisitor implements RAQueryVisitor{
 			currentSub = currentUnary.getSubQuery();
 			if(currentSub instanceof UnaryRAQuery)
 				currentUnary = (UnaryRAQuery)currentSub;
+			else break;
 		}
 
 		return currentSub;

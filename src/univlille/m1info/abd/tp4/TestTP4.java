@@ -1,9 +1,11 @@
 package univlille.m1info.abd.tp4;
 
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import univlille.m1info.abd.ra.ComparisonOperator;
+import univlille.m1info.abd.ra.DisplayVisitor;
 import univlille.m1info.abd.ra.JoinQuery;
 import univlille.m1info.abd.ra.OptimizerVisitor;
 import univlille.m1info.abd.ra.ProjectionQuery;
@@ -46,10 +48,11 @@ public class TestTP4 {
 		return selec;
 	}
 	
-	@Test
+	/*@Test
 	public void testOptimizerVisitorNonOptimizedTree() {
 		SimpleSGBD sgbd = new SimpleSGBD();
 		OptimizerVisitor optimVisitor = new OptimizerVisitor(sgbd);
+		DisplayVisitor dispVisitor = new DisplayVisitor();
 		
 		SimpleDBRelation r = sgbd.createRelation("RELONE", "attrA", "attrB");
 		r.addTuple(new String[]{"10", "9"});
@@ -61,14 +64,16 @@ public class TestTP4 {
 		
 		RAQuery root = getRootQuery_non_optimized_tree();
 		root.accept(optimVisitor);
+		root.accept(dispVisitor);
 		
 		assertTrue(assertTreeStructureEquals(getRootQuery_optimized_tree(), optimVisitor.topQuery()));
-	}
+	}*/
 	
 	@Test
 	public void testOptimizerVisitorOnOptimizedTree() {
 		SimpleSGBD sgbd = new SimpleSGBD();
 		OptimizerVisitor optimVisitor = new OptimizerVisitor(sgbd);
+		DisplayVisitor visitor = new DisplayVisitor();
 		
 		SimpleDBRelation r = sgbd.createRelation("RELONE", "attrA", "attrB");
 		r.addTuple(new String[]{"10", "9"});
@@ -78,13 +83,14 @@ public class TestTP4 {
 		s.addTuple(new String[]{"1", "2", "3"});
 		s.addTuple(new String[]{"4", "5", "6"});
 		
-		RAQuery root = getRootQuery_non_optimized_tree();
+		RAQuery root = getRootQuery_optimized_tree();
+		root.accept(visitor);
 		root.accept(optimVisitor);
 		
 		assertTrue(assertTreeStructureEquals(getRootQuery_optimized_tree(), optimVisitor.topQuery()));
 	}
 	
-	@Test
+	/*@Test
 	public void testOptimizerVisitorOnSelectionQueryAsRootTree() {
 		SimpleSGBD sgbd = new SimpleSGBD();
 		OptimizerVisitor optimVisitor = new OptimizerVisitor(sgbd);
@@ -97,11 +103,11 @@ public class TestTP4 {
 		s.addTuple(new String[]{"1", "2", "3"});
 		s.addTuple(new String[]{"4", "5", "6"});
 		
-		RAQuery root = getRootQuery_non_optimized_tree();
+		RAQuery root = getRootQuery_selection_as_top_query();
 		root.accept(optimVisitor);
 		
 		assertTrue(assertTreeStructureEquals(getRootQuery_optimized_tree(), optimVisitor.topQuery()));
-	}
+	}*/
 	
 	private boolean assertTreeStructureEquals(RAQuery expected, RAQuery actual) {
 		RAQuery currentExpected = expected, currentActual = actual;
