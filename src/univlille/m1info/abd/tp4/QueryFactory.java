@@ -51,7 +51,6 @@ public class QueryFactory {
 			copy = new ProjectionQuery(leftSubQuery, tmp.getProjectedAttributesNames());
 		}
 		else if(q instanceof JoinQuery) {
-			JoinQuery tmp = (JoinQuery)q;
 			copy = new JoinQuery(leftSubQuery, rightSubQuery);
 		}
 		else if(q instanceof RenameQuery) {
@@ -64,5 +63,9 @@ public class QueryFactory {
 		}
 		
 		return copy;
+	}
+	
+	public static SelectionQuery getSelectionWithOldAttribute(SelectionQuery selection, RenameQuery rename) {
+		return new SelectionQuery(rename.getSubQuery(), rename.getOldAttrName(), selection.getComparisonOperator(), selection.getConstantValue());
 	}
 }

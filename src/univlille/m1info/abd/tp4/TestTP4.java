@@ -15,7 +15,7 @@ import univlille.m1info.abd.simplebd.SimpleDBRelation;
 import univlille.m1info.abd.simplebd.SimpleSGBD;
 
 /**
- * Custom test class in order to test 
+ * Custom test class in order to test OptimizerVisitor
  */
 public class TestTP4 {
 	
@@ -49,7 +49,7 @@ public class TestTP4 {
 	@Test
 	public void testOptimizerVisitorNonOptimizedTree() {
 		SimpleSGBD sgbd = new SimpleSGBD();
-		OptimizerVisitor optimVisitor = new OptimizerVisitor();
+		OptimizerVisitor optimVisitor = new OptimizerVisitor(sgbd);
 		
 		SimpleDBRelation r = sgbd.createRelation("RELONE", "attrA", "attrB");
 		r.addTuple(new String[]{"10", "9"});
@@ -60,18 +60,15 @@ public class TestTP4 {
 		s.addTuple(new String[]{"4", "5", "6"});
 		
 		RAQuery root = getRootQuery_non_optimized_tree();
-		
 		root.accept(optimVisitor);
 		
-		RAQuery optimizedRoot = optimVisitor.getOptimizedRoot();
-		
-		assertTrue(assertTreeStructureEquals(getRootQuery_optimized_tree(), optimizedRoot));
+		assertTrue(assertTreeStructureEquals(getRootQuery_optimized_tree(), optimVisitor.topQuery()));
 	}
 	
 	@Test
 	public void testOptimizerVisitorOnOptimizedTree() {
 		SimpleSGBD sgbd = new SimpleSGBD();
-		OptimizerVisitor optimVisitor = new OptimizerVisitor();
+		OptimizerVisitor optimVisitor = new OptimizerVisitor(sgbd);
 		
 		SimpleDBRelation r = sgbd.createRelation("RELONE", "attrA", "attrB");
 		r.addTuple(new String[]{"10", "9"});
@@ -82,18 +79,15 @@ public class TestTP4 {
 		s.addTuple(new String[]{"4", "5", "6"});
 		
 		RAQuery root = getRootQuery_non_optimized_tree();
-		
 		root.accept(optimVisitor);
 		
-		RAQuery optimizedRoot = optimVisitor.getOptimizedRoot();
-		
-		assertTrue(assertTreeStructureEquals(getRootQuery_optimized_tree(), optimizedRoot));
+		assertTrue(assertTreeStructureEquals(getRootQuery_optimized_tree(), optimVisitor.topQuery()));
 	}
 	
 	@Test
 	public void testOptimizerVisitorOnSelectionQueryAsRootTree() {
 		SimpleSGBD sgbd = new SimpleSGBD();
-		OptimizerVisitor optimVisitor = new OptimizerVisitor();
+		OptimizerVisitor optimVisitor = new OptimizerVisitor(sgbd);
 		
 		SimpleDBRelation r = sgbd.createRelation("RELONE", "attrA", "attrB");
 		r.addTuple(new String[]{"10", "9"});
@@ -104,12 +98,9 @@ public class TestTP4 {
 		s.addTuple(new String[]{"4", "5", "6"});
 		
 		RAQuery root = getRootQuery_non_optimized_tree();
-		
 		root.accept(optimVisitor);
 		
-		RAQuery optimizedRoot = optimVisitor.getOptimizedRoot();
-		
-		assertTrue(assertTreeStructureEquals(getRootQuery_optimized_tree(), optimizedRoot));
+		assertTrue(assertTreeStructureEquals(getRootQuery_optimized_tree(), optimVisitor.topQuery()));
 	}
 	
 	private boolean assertTreeStructureEquals(RAQuery expected, RAQuery actual) {

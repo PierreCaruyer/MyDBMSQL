@@ -5,13 +5,11 @@ import java.util.HashMap;
 
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
-import univlille.m1info.abd.simplebd.SimpleDBRelation;
 
 public class ProjectionOperator implements PhysicalOperator{
 
 	private PhysicalOperator operator;
 	private String[] attributeNames;
-	private SimpleDBRelation relation;
 	private RelationSchema schema;
 	
 	public ProjectionOperator(PhysicalOperator operator, String ... attrNames) {
@@ -19,7 +17,6 @@ public class ProjectionOperator implements PhysicalOperator{
 		this.attributeNames = attrNames;
 
 		schema = new VolatileRelationSchema(attributeNames);
-		relation = new SimpleDBRelation(schema);
 	}
 	
 	@Override
@@ -50,6 +47,6 @@ public class ProjectionOperator implements PhysicalOperator{
 
 	@Override
 	public void reset() {
-		relation.switchToReadMode();
+		operator.reset();
 	}
 }

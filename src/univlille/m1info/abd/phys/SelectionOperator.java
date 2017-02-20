@@ -3,7 +3,6 @@ package univlille.m1info.abd.phys;
 import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
-import univlille.m1info.abd.simplebd.SimpleDBRelation;
 
 public class SelectionOperator implements PhysicalOperator {
 
@@ -12,7 +11,6 @@ public class SelectionOperator implements PhysicalOperator {
 	private String constantValue;
 	private String attributeName;
 	private int attributeIndex = -1;
-	private SimpleDBRelation relation;
 	private RelationSchema schema;
 
 	public SelectionOperator(PhysicalOperator operator, String attrName, String constantValue, ComparisonOperator comparator) {
@@ -24,7 +22,6 @@ public class SelectionOperator implements PhysicalOperator {
 		String[] sorts = operator.resultSchema().getSort();
 		
 		schema = new VolatileRelationSchema(sorts);
-		relation = new SimpleDBRelation(schema);
 		
 		for(int i = 0; i < sorts.length && attributeIndex < 0; i++)
 			if(sorts[i].equals(attributeName))
@@ -71,6 +68,6 @@ public class SelectionOperator implements PhysicalOperator {
 
 	@Override
 	public void reset() {
-		relation.switchToReadMode();
+		operator.reset();
 	}
 }

@@ -1,9 +1,13 @@
 package univlille.m1info.abd.ra;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleSGBD;
 import univlille.m1info.abd.tp4.QueryFactory;
 
 /**
@@ -12,24 +16,23 @@ import univlille.m1info.abd.tp4.QueryFactory;
  */
 public class OptimizerVisitor implements RAQueryVisitor{
 
+	private SimpleSGBD sgbd = null;
 	private Deque<SelectionQuery> selectionCollector = null;
 	private Iterator<SelectionQuery> selectionIterator = null;
-	private boolean rootJustInitialized = false;
-	private RAQuery optimRoot = null;
-	private RAQuery lastQuery = null;
-	private RAQuery currentOptimQuery = null;
+	private RAQuery topQuery = null;
+	private RAQuery leftQuery = null, rightQuery = null; //Used to describe join queries' subqueries
+	private boolean leftQueryEnabled = false, rightQueryEnabled = false;
 
-	public OptimizerVisitor() {
+	public OptimizerVisitor(SimpleSGBD sgbd) {
 		selectionCollector = new ConcurrentLinkedDeque<>();
-		optimRoot = null;
-		rootJustInitialized = false;
+		this.sgbd = sgbd;
 	}
 
-	public void switchToReadMode() {
+	private void switchToReadMode() {
 		selectionIterator = selectionCollector.iterator();
 	}
 
-	public SelectionQuery nextQuery() {
+	private SelectionQuery nextQuery() {
 		return (selectionIterator.hasNext())? selectionIterator.next() : null;
 	}
 
@@ -38,129 +41,107 @@ public class OptimizerVisitor implements RAQueryVisitor{
 	 */
 	@Override
 	public void visit(SelectionQuery q) {
-		if(optimRoot == null) { //A selection cannot be the root of the tree, the aim being to get the selection queries 
-								//close to the leaves of the tree
-			optimRoot = skipSelectionsFrom(q);
-			if(optimRoot instanceof RelationNameQuery) {
-				
-			}
-//			optimRoot = QueryFactory.copyQuery(q);
-			rootJustInitialized = true;
-		}
-		RAQuery sub = q.getSubQuery();
-		lastQuery = q;
-		sub.accept(this);
-		if(sub instanceof RenameQuery) {
-			RenameQuery rnq = (RenameQuery)sub;
-			q.setAttributeName(rnq.getOldAttrName());
-		}
-		q.getSubQuery().accept(this);
-		selectionCollector.add(q);
+		System.out.println(q);
+		skipSelectionsFrom(q).accept(this);
 	}
 
 	@Override
 	public void visit(ProjectionQuery q) {
-		if(optimRoot == null) {
-			optimRoot = QueryFactory.copyQuery(q);
-			rootJustInitialized = true;
-		}
-		lastQuery = q;
+		System.out.println(q);
 		q.getSubQuery().accept(this);
+		if(rightQueryEnabled) {
+			rightQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
+			rightQueryEnabled = false;
+		}
+		else if(leftQueryEnabled) {
+			leftQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
+			leftQueryEnabled = false;
+		}
+		else {
+			topQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
+		}
 	}
 
 	@Override
 	public void visit(JoinQuery q) {
-		if(optimRoot == null) {
-			optimRoot = QueryFactory.copyQuery(q);
-			rootJustInitialized = true;
-		}
-		lastQuery = q;
-		q.getLeftSubQuery().accept(this);
-		q.getRightSubQuery().accept(this);
 		System.out.println(q);
+		//leftQuery will take the role of topQuery
+		leftQueryEnabled = true;
+		q.getLeftSubQuery().accept(this);
+		
+		//rightQuery will take the role of topQuery
+		rightQueryEnabled = true;
+		q.getRightSubQuery().accept(this);
+		
+		topQuery = QueryFactory.copyCustomQuery(q, leftQuery, rightQuery);
 	}
 
 	@Override
 	public void visit(RenameQuery q) {
-		if(optimRoot == null) {
-			optimRoot = QueryFactory.copyQuery(q);
-			rootJustInitialized = true;
-		}
-		lastQuery = q;
-		q.getSubQuery().accept(this);
 		System.out.println(q);
+		q.getSubQuery().accept(this);
+		if(rightQueryEnabled) {
+			rightQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
+			rightQueryEnabled = false;
+		}
+		else if(leftQueryEnabled) {
+			leftQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
+			leftQueryEnabled = false;
+		}
+		else {
+			topQuery = QueryFactory.copyCustomQuery(q, topQuery, null);
+		}
 	}
 
 	@Override
 	public void visit(RelationNameQuery q) {
-		if(lastQuery instanceof UnaryRAQuery) {
-			SelectionQuery tmp = nextQuery();
-			while((tmp = nextQuery()) != null) { //Re-linking selection queries to the leaves of the tree
-				currentOptimQuery = QueryFactory.copyQuery(tmp);
-				
+		System.out.println(q);
+		SelectionQuery tmp;
+		SimpleDBRelation relation = sgbd.getRelation(q.getRelationName());
+		List<SelectionQuery> selectionList = new ArrayList<>();
+
+		switchToReadMode();
+		while((tmp = nextQuery()) != null)
+			selectionList.add(tmp);
+
+		topQuery = QueryFactory.copyCustomQuery(selectionList.get(0), q, null);
+
+		for(int i = 1; i < selectionList.size(); i++){ //Filter selection queries
+			SelectionQuery selection = selectionList.get(i);
+			String[] sorts = relation.getRelationSchema().getSort();
+			if(arrayContains(sorts, selection.getAttributeName())) {
+				topQuery = QueryFactory.copyCustomQuery(selectionList.get(i), topQuery, null);
 			}
 		}
-		else if(lastQuery instanceof RelationNameQuery) {
-
-		}
-		else { //JoinQuery
-
-		}
 	}
-	
+
 	/**
 	 * Starts at some node of the tree and skips all selection queries from there
 	 * @param currentEntryPoint
 	 * @return the first query which is not a selection
 	 */
-	public static RAQuery skipSelectionsFrom(RAQuery entryPoint) {
-		RAQuery currentNode = entryPoint;
-		UnaryRAQuery currentUnary = null;
-		
-		if(currentNode instanceof UnaryRAQuery) {
-			currentUnary = (UnaryRAQuery)currentNode;
-			while(currentUnary instanceof SelectionQuery) {
-				currentNode = currentUnary.getSubQuery();
-				if(currentNode instanceof UnaryRAQuery)
-					currentUnary = (UnaryRAQuery)currentNode;
-			}
-		}
-		
-		return currentNode;
-	}
-	
-	/**
-	 * Pushes selection queries down in the query tree
-	 * @param root
-	 * @return root of the newly optimized query tree
-	 */
-	public static RAQuery optimizeTree(RAQuery root) {
-		RAQuery optimRoot = null, currentNode = null, currentOptimNode = null;
+	private RAQuery skipSelectionsFrom(SelectionQuery entryPoint) {
+		RAQuery currentSub = null;
+		UnaryRAQuery currentUnary = entryPoint;
 
-		currentNode = skipSelectionsFrom(root);
-		currentOptimNode = QueryFactory.copyQuery(currentNode);
-		if(currentOptimNode instanceof JoinQuery) {
-			
+		while(currentUnary instanceof SelectionQuery) {
+			selectionCollector.push((SelectionQuery)currentUnary);
+			currentSub = currentUnary.getSubQuery();
+			if(currentSub instanceof UnaryRAQuery)
+				currentUnary = (UnaryRAQuery)currentSub;
 		}
-		else if(currentOptimNode instanceof RelationNameQuery) {
-			
-		}
-		else { //UnaryRAQuery
-			if(currentOptimNode instanceof SelectionQuery) {
-				
-			}
-			else if(currentOptimNode instanceof ProjectionQuery) {
-				
-			}
-			else { //RenameQuery
-				
-			}
-		}
-		
-		return optimRoot;
+
+		return currentSub;
 	}
-	
-	public RAQuery getOptimizedRoot() {
-		return optimRoot;
+
+	private boolean arrayContains(String[] array, String str) {
+		for(String s : array)
+			if(s.equals(str))
+				return true;
+		return false;
+	}
+
+	public RAQuery topQuery() {
+		return topQuery;
 	}
 }
