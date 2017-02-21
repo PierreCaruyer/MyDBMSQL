@@ -170,7 +170,7 @@ public class OptimizerVisitor implements RAQueryVisitor {
 				res = QueryFactory.copyCustomQuery(query, stack.pop(), stack.pop());
 				stack.push(res);
 			} else if ( query instanceof RenameQuery ) {
-				
+				// TODO
 			} 
 		}
 		System.out.println("RES => " + res);
