@@ -11,7 +11,6 @@ import univlille.m1info.abd.simplebd.SimpleSGBD;
 import univlille.m1info.abd.tp4.QueryFactory;
 
 public class OptimizerVisitor implements RAQueryVisitor {
-	private RAQuery optimRoot = null;
 	private SimpleSGBD sgbd;
 	private ArrayList<SelectionQuery> queue;
 	private ArrayDeque<RAQuery> routes;
@@ -29,10 +28,6 @@ public class OptimizerVisitor implements RAQueryVisitor {
 		System.out.println("* SEL");
 		System.out.println(q.toString());
 		
-		if(optimRoot == null) {
-			optimRoot = QueryFactory.copyQuery(q);
-		}
-		
 		if ( !(q.getSubQuery() instanceof RelationNameQuery) ) queue.add(q);
 		
 		q.getSubQuery().accept(this);
@@ -44,18 +39,12 @@ public class OptimizerVisitor implements RAQueryVisitor {
 		System.out.println("* PROJ");
 		System.out.println(q.toString());
 		
-		if(optimRoot == null) {
-			optimRoot = QueryFactory.copyQuery(q);
-		}
-		
 		RAQuery subQuery = q.getSubQuery();
 		if ( subQuery instanceof SelectionQuery ) {
 			SelectionQuery select = (SelectionQuery) subQuery;
 			queue.add((SelectionQuery) select);
 			RAQuery sub = select.getSubQuery();
 			ProjectionQuery ret = (ProjectionQuery) QueryFactory.copyCustomQuery(q, sub, null);
-			
-			System.out.println("proj ret = "+ret);
 			
 			addRoute(ret);
 			ret.getSubQuery().accept(this);
@@ -86,7 +75,6 @@ public class OptimizerVisitor implements RAQueryVisitor {
 			rightQuery = QueryFactory.copyCustomQuery(rightQuery, select.getSubQuery(), null);
 		}
 		RAQuery query = QueryFactory.copyCustomQuery(q, leftQuery, rightQuery);
-		System.out.println("Join test = " + query);
 		
 		addRoute(query);
 		leftQuery.accept(this);
@@ -121,18 +109,13 @@ public class OptimizerVisitor implements RAQueryVisitor {
 				if ( Arrays.asList(sorts).contains(selectAttr) ) {
 					selectWaiting = true;
 					
-					System.out.format("> select %s %s\n", selectAttr, select.toString());
-					
 					SelectionQuery sel = new SelectionQuery(
 						q, 
 						selectAttr, 
 						select.getComparisonOperator(), 
 						select.getConstantValue());
-					System.out.format(">> select %s\n", sel.toString());
 					addRoute(sel);
-					System.out.format(">> nbQueue %s\n", queue.size());
 					queue.remove(i);
-					System.out.format(">> nbQueue %s\n", queue.size());
 					sel.accept(this);
 					break;
 				}
@@ -147,12 +130,6 @@ public class OptimizerVisitor implements RAQueryVisitor {
 	}
 
 	public RAQuery topQuery() {
-		// TODO Auto-generated method stub
-		String req = optimRoot.toString();
-		System.out.println("OPTIMROOT => " + req);
-		
-		for ( RAQuery q : routes ) System.out.println("----> "+q.toString());
-		
 		Stack<RAQuery> stack = new Stack<RAQuery>();
 		
 		RAQuery res = null;
