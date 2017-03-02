@@ -105,4 +105,10 @@ public class JoinOperator implements PhysicalOperator {
 		left.reset();
 		right.reset();
 	}
+
+	@Override
+	public int nextPage() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

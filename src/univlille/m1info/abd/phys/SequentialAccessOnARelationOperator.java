@@ -27,4 +27,10 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 	public void reset() {
 		relation.switchToReadMode();
 	}
+
+	@Override
+	public int nextPage() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

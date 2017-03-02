@@ -70,4 +70,10 @@ public class SelectionOperator implements PhysicalOperator {
 	public void reset() {
 		operator.reset();
 	}
+
+	@Override
+	public int nextPage() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

@@ -27,4 +27,13 @@ public interface PhysicalOperator {
 	 */
 	public void reset();
 	
+	
+	/**
+	 * We do want to access directly to the tuples by through the pages where they are stored.
+	 * The pages are managed trough the Memory Manager
+	 * 
+	 * @return
+	 */
+	public int nextPage();
+	
 }

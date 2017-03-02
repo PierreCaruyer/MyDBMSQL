@@ -36,4 +36,10 @@ public class RenameOperator implements PhysicalOperator{
 		operator.reset();
 	}
 
+	@Override
+	public int nextPage() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }
