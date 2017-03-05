@@ -1,11 +1,8 @@
 package univlille.m1info.abd.tp3;
 
 import univlille.m1info.abd.phys.JoinOperator;
-import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.PhysicalOperator;
-import univlille.m1info.abd.phys.ProjectionOperator;
 import univlille.m1info.abd.phys.RenameOperator;
-import univlille.m1info.abd.phys.SelectionOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
 import univlille.m1info.abd.ra.JoinQuery;
 import univlille.m1info.abd.ra.ProjectionQuery;

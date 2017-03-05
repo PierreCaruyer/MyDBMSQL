@@ -15,8 +15,8 @@ public class JoinOperator implements PhysicalOperator {
 	private RelationSchema schemaLeft;
 	private RelationSchema schemaRight;
 	private ArrayList<String> joinSorts;
-	String[] leftSorts;
-	String[] rightSorts;
+	private String[] leftSorts;
+	private String[] rightSorts;
 	
 	public JoinOperator(PhysicalOperator right, PhysicalOperator left) {
 		this.left = left;
@@ -60,7 +60,7 @@ public class JoinOperator implements PhysicalOperator {
 		/*
 		 * If the left operator returns a left tuple, then all tuple combinations have been tested.
 		 */
-		if(leftTuple == null)
+		if(leftTuple == null || rightTuple == null)
 			return null;
 			
 		// Find the common attributes between left and right
