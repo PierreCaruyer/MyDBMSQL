@@ -1,35 +1,31 @@
-package univlille.m1info.abd.phys;
+package univlille.m1info.abd.tp3;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import univlille.m1info.abd.phys.PhysicalOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class JoinOperator implements PhysicalOperator {
+public class PreviousJoinOperator implements PhysicalOperator {
 
 	private String[] leftTuple;
 	private final PhysicalOperator right;
 	private final PhysicalOperator left;
-	private Page leftPage, rightPage;
 	private final RelationSchema schema;
 	private final RelationSchema schemaLeft;
 	private final RelationSchema schemaRight;
 	private ArrayList<String> joinSorts;
 	private final String[] leftSorts;
 	private final String[] rightSorts;
-	private final MemoryManager mem;
-	private boolean workComplete;
 	
-	public JoinOperator(PhysicalOperator right, PhysicalOperator left, MemoryManager mem) {
+	public PreviousJoinOperator(PhysicalOperator right, PhysicalOperator left) {
 		this.left = left;
 		this.right = right;
-		this.mem = mem;
 		schemaLeft = left.resultSchema();
 		schemaRight = right.resultSchema();
 		leftSorts = schemaLeft.getSort();
 		rightSorts = schemaRight.getSort();
-		workComplete = false;
 
 		/*
 		 * Gives the output relation the attributes of both input relations
@@ -42,7 +38,6 @@ public class JoinOperator implements PhysicalOperator {
 		schema = new VolatileRelationSchema(joinSorts.toArray(new String[joinSorts.size()]));
 			
 		leftTuple = left.nextTuple(); //Initialising leftTuple to a default value
-		leftPage = loadPage(left.nextPage());
 	}
 	
 	@Override
@@ -50,7 +45,7 @@ public class JoinOperator implements PhysicalOperator {
 		/*
 		 * For each, left tuple, attempt to find a non-null right tuple.
 		 */
-		String[] rightTuple = rightPage.nextTuple();
+		String[] rightTuple = right.nextTuple();
 
 		/*
 		 * If right tuple is null, then the right physical operator must be rewinded
@@ -59,17 +54,15 @@ public class JoinOperator implements PhysicalOperator {
 		 */
 		if(rightTuple == null){
 			right.reset();
-			leftTuple = leftPage.nextTuple();
-			rightTuple = rightPage.nextTuple();
+			leftTuple = left.nextTuple();
+			rightTuple = right.nextTuple();
 		}
 		
 		/*
 		 * If the left operator returns a left tuple, then all tuple combinations have been tested.
 		 */
-		if(leftTuple == null || rightTuple == null) {
-			workComplete = true;
+		if(leftTuple == null || rightTuple == null)
 			return null;
-		}
 			
 		// Find the common attributes between left and right
 		ArrayList<String> inter = new ArrayList<String>();
@@ -113,51 +106,10 @@ public class JoinOperator implements PhysicalOperator {
 		left.reset();
 		right.reset();
 	}
-	
-	private Page loadPage(int pageAddress) {
-		Page p = null;
-		try {
-			if(pageAddress > -1) {
-				p = mem.loadPage(pageAddress);
-				p.switchToReadMode();
-			}
-		} catch (NotEnoughMemoryException e) {
-			e.printStackTrace();
-		}
-		return p;
-	}
 
 	@Override
 	public int nextPage() {
-		if(leftPage == null) { 
-			leftPage = loadPage(left.nextPage());
-			if(leftPage == null)
-				return -1;
-		}
 		
-		if(rightPage == null) {
-			rightPage = loadPage(right.nextPage());
-			if(rightPage == null) {
-				right.reset();
-				rightPage = loadPage(right.nextPage());
-				if(rightPage == null)
-					return -2;
-			}
-		}
-		mem.releasePage(rightPage.getAddressPage(), false);//Might change
-		mem.releasePage(leftPage.getAddressPage(), false);
-		Page currentPage = null;
-		
-		try {
-			currentPage = mem.NewPage(schema.getSort().length);
-		} catch (NotEnoughMemoryException e) {
-			return -3;
-		}
-		
-		String[] tuple = null;
-		while((!currentPage.isFull()) || (((tuple = nextTuple()) != null) && !workComplete))
-			currentPage.AddTuple(tuple);
-		
-		return currentPage.getAddressPage();
+		return -1;
 	}
 }

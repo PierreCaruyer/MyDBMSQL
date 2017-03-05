@@ -42,6 +42,7 @@ public class DefaultRelation {
     	int arity = tuples.get(0).length;
     	try {
 			Page currentPage = mem.NewPage(arity);
+			mem.PutinMemory(currentPage, currentPage.getAddressPage());
 			Page lastPage = null;
 			currentPage.SetPrevAdd(-1);
 			firstPageAddress = currentPage.getAddressPage();
@@ -50,6 +51,7 @@ public class DefaultRelation {
 				if(currentPage.isFull()) {
 					lastPage = currentPage;
 					currentPage = mem.NewPage(arity);
+					mem.PutinMemory(currentPage, currentPage.getAddressPage()); //might not be necessary
 					currentPage.SetPrevAdd(lastPage.getAddressPage());
 					lastPage.SetNextAdd(currentPage.getAddressPage());
 				}

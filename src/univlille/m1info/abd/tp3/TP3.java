@@ -1,6 +1,5 @@
 package univlille.m1info.abd.tp3;
 
-import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.PhysicalOperator;
 import univlille.m1info.abd.phys.RenameOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
@@ -56,7 +55,7 @@ public class TP3 {
 			rightSequence = getSequentialAccessFromRelationName(sgbd, rightRelationNameQuery.getRelationName());
 			leftSequence = getSequentialAccessFromRelationName(sgbd, leftRelationNameQuery.getRelationName());
 			
-			operator = new JoinOperator(rightSequence, leftSequence);
+			operator = new PreviousJoinOperator(rightSequence, leftSequence);
 		}
 		return operator;
 	}

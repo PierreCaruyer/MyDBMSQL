@@ -44,6 +44,6 @@ public class ProjectionOperator extends AbstractFilterOperator implements Physic
 
 	@Override
 	public int nextPage() {
-		return super.nextPage();
+		return filter.nextPage();
 	}
 }

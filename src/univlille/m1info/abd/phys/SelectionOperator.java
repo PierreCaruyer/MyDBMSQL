@@ -66,6 +66,6 @@ public class SelectionOperator extends AbstractFilterOperator implements Physica
 
 	@Override
 	public int nextPage() {
-		return super.nextPage();
+		return filter.nextPage();
 	}
 }

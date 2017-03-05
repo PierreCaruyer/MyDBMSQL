@@ -16,6 +16,7 @@ public class FilterOperator{
 			String[] tuple;
 			while(!(p.isFull() || (tuple = operator.nextTuple()) == null))
 				p.AddTuple(tuple);
+			mem.PutinMemory(p, p.getAddressPage()); // might not be necessary
 			return p.getAddressPage();
 		} catch (NotEnoughMemoryException e) {
 			e.printStackTrace();
