@@ -31,7 +31,7 @@ public class TP3 {
 			
 			relationNameQuery = getRelationNameSubQuery(projection);
 			sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
-			operator = new ProjectionOperator(sequence, projection.getProjectedAttributesNames());
+			operator = new PreviousProjectionOperator(sequence, projection.getProjectedAttributesNames());
 		}
 		else if(query instanceof SelectionQuery) {
 			SelectionQuery selection = (SelectionQuery)query;
@@ -40,7 +40,7 @@ public class TP3 {
 			
 			relationNameQuery = getRelationNameSubQuery(selection);
 			sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
-			operator = new SelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator());
+			operator = new PreviousSelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator());
 		}
 		else if(query instanceof RenameQuery) {
 			RenameQuery rename = (RenameQuery)query;
