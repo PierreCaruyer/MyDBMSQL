@@ -58,9 +58,9 @@ public class JoinOperator implements PhysicalOperator {
 		}
 		
 		/*
-		 * If left or right tuple is null then it means all combination must have been tested.
+		 * If the left operator returns a left tuple, then all tuple combinations have been tested.
 		 */
-		if(leftTuple == null || rightTuple == null)
+		if(leftTuple == null)
 			return null;
 			
 		// Find the common attributes between left and right

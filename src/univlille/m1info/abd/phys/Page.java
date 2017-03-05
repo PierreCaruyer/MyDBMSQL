@@ -17,6 +17,12 @@ public interface Page {
 	
 	public int getAddresspreviousPage ();
 	
+	/**
+	 * Temporary solution
+	 * @return
+	 */
+	public boolean isFull();
+	
 	
 	/**
 	 * 

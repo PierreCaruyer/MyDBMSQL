@@ -4,19 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class ProjectionOperator implements PhysicalOperator{
+public class ProjectionOperator extends AbstractFilterOperator implements PhysicalOperator{
 
-	private PhysicalOperator operator;
-	private String[] attributeNames;
-	private RelationSchema schema;
-	
-	public ProjectionOperator(PhysicalOperator operator, String ... attrNames) {
-		this.operator = operator;
-		this.attributeNames = attrNames;
-
-		schema = new VolatileRelationSchema(attributeNames);
+	public ProjectionOperator(PhysicalOperator operator, MemoryManager mem, String ... attrNames) {
+		super(operator, mem, attrNames);
 	}
 	
 	@Override
@@ -52,7 +44,6 @@ public class ProjectionOperator implements PhysicalOperator{
 
 	@Override
 	public int nextPage() {
-		// TODO Auto-generated method stub
-		return 0;
+		return super.nextPage();
 	}
 }

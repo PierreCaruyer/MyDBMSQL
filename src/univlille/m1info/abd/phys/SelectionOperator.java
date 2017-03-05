@@ -2,29 +2,22 @@ package univlille.m1info.abd.phys;
 
 import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class SelectionOperator implements PhysicalOperator {
+public class SelectionOperator extends AbstractFilterOperator implements PhysicalOperator {
 
-	private ComparisonOperator comparator;
-	private PhysicalOperator operator;
-	private String constantValue;
-	private String attributeName;
+	private final ComparisonOperator comparator;
+	private final String constantValue;
 	private int attributeIndex = -1;
-	private RelationSchema schema;
 
-	public SelectionOperator(PhysicalOperator operator, String attrName, String constantValue, ComparisonOperator comparator) {
-		this.operator = operator;
-		this.attributeName = attrName;
+	public SelectionOperator(PhysicalOperator operator, String attrName, String constantValue, ComparisonOperator comparator, MemoryManager mem) {
+		super(operator, mem, attrName);
 		this.constantValue = constantValue;
 		this.comparator = comparator;
 		
 		String[] sorts = operator.resultSchema().getSort();
 		
-		schema = new VolatileRelationSchema(sorts);
-		
 		for(int i = 0; i < sorts.length && attributeIndex < 0; i++)
-			if(sorts[i].equals(attributeName))
+			if(sorts[i].equals(attrName))
 				attributeIndex = i;
 	}
 
@@ -48,7 +41,7 @@ public class SelectionOperator implements PhysicalOperator {
 		int comparison = value1.compareTo(value2);
 
 		if(comparator == ComparisonOperator.EQUAL)
-			return (comparison == 0);
+			return (comparison == 0)? true : false;
 		else if(comparator == ComparisonOperator.GREATER)
 			return (comparison > 0)? true : false;
 		else if(comparator == ComparisonOperator.GREATER_OR_EQUAL)
@@ -73,7 +66,6 @@ public class SelectionOperator implements PhysicalOperator {
 
 	@Override
 	public int nextPage() {
-		// TODO Auto-generated method stub
-		return 0;
+		return super.nextPage();
 	}
 }
