@@ -39,19 +39,17 @@ public class DefaultRelation {
     public void loadTuples(List<String[]> tuples){
     	if(tuples.isEmpty())
     		return;
-    	int arity = tuples.get(0).length;
     	try {
-			Page currentPage = mem.NewPage(arity);
-			mem.PutinMemory(currentPage, currentPage.getAddressPage());
+			Page currentPage = mem.NewPage(tuples.get(0).length);
 			Page lastPage = null;
 			currentPage.SetPrevAdd(-1);
 			firstPageAddress = currentPage.getAddressPage();
-			for(String[] tuple : tuples) {
-				currentPage.AddTuple(tuple);
+			for(int i = 1; i < tuples.size(); i++) {
+				currentPage.AddTuple(tuples.get(i));
 				if(currentPage.isFull()) {
+					mem.releasePage(currentPage.getAddressPage(), true);
 					lastPage = currentPage;
-					currentPage = mem.NewPage(arity);
-					mem.PutinMemory(currentPage, currentPage.getAddressPage()); //might not be necessary
+					currentPage = mem.NewPage(tuples.get(i+1).length);
 					currentPage.SetPrevAdd(lastPage.getAddressPage());
 					lastPage.SetNextAdd(currentPage.getAddressPage());
 				}

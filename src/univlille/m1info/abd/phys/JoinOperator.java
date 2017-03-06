@@ -2,6 +2,8 @@ package univlille.m1info.abd.phys;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
@@ -20,6 +22,8 @@ public class JoinOperator implements PhysicalOperator {
 	private final String[] rightSorts;
 	private final MemoryManager mem;
 	private boolean workComplete;
+	
+	private int userIndex = 0;
 	
 	public JoinOperator(PhysicalOperator right, PhysicalOperator left, MemoryManager mem) {
 		this.left = left;
@@ -72,10 +76,8 @@ public class JoinOperator implements PhysicalOperator {
 		}
 			
 		// Find the common attributes between left and right
-		ArrayList<String> inter = new ArrayList<String>();
-		for ( String attr : rightSorts ) {
-			if ( Arrays.asList(leftSorts).contains(attr) ) inter.add(attr); 
-		}
+		ArrayList<String> inter = getInterSorts();
+		
 		// Check the joint
 		boolean isJoin = true;
 		for ( String attr : inter ) {
@@ -159,5 +161,64 @@ public class JoinOperator implements PhysicalOperator {
 			currentPage.AddTuple(tuple);
 		
 		return currentPage.getAddressPage();
+	}
+	
+	private ArrayList<String> getInterSorts() {
+		ArrayList<String> inter = new ArrayList<String>();
+		for ( String attr : rightSorts ) {
+			if ( Arrays.asList(leftSorts).contains(attr) ) inter.add(attr); 
+		}
+		
+		return inter;
+	}
+	
+	private void sortRelations() {
+		List<String[]> leftTuples, rightTuples;
+		ArrayList<String> interSorts = getInterSorts();
+		leftTuples = getOperatorTuples(left);
+		rightTuples = getOperatorTuples(right);
+		
+		leftTuples.sort(new Comparator<String[]>(){
+			@Override
+			public int compare(String[] o1, String[] o2) {
+				return o1[userIndex].compareTo(o2[userIndex]);
+			}
+		});
+		
+		rightTuples.sort(new Comparator<String[]>(){
+			@Override
+			public int compare(String[] o1, String[] o2) {
+				return o1[userIndex].compareTo(o2[userIndex]);
+			}
+		});
+		rememberSortedTuples(leftTuples, rightTuples);
+	}
+	
+	private void rememberSortedTuples(List<String[]> leftTuples, List<String[]> rightTuples) {
+		DefaultRelation rightDefRelation = new DefaultRelation(schemaRight, mem);
+		DefaultRelation leftDefRelation = new DefaultRelation(schemaLeft, mem);
+		
+		rightDefRelation.loadTuples(rightTuples);
+		leftDefRelation.loadTuples(leftTuples);
+	}
+	
+	private List<String[]> getOperatorTuples(PhysicalOperator o) {
+		List<String[]> operatorTuples = new ArrayList<>();
+		String[] currentTuple = null;
+		int currentPageAddr = -1;
+		Page currentPage = null;
+		
+		while((currentPageAddr = o.nextPage()) > 0) {
+			try {
+				currentPage = mem.loadPage(currentPageAddr);
+				while((currentTuple = currentPage.nextTuple()) != null)
+					operatorTuples.add(currentTuple);
+				mem.releasePage(currentPageAddr, false);
+			} catch (NotEnoughMemoryException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return operatorTuples;
 	}
 }
