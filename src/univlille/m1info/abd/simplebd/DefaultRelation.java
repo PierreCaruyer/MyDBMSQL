@@ -1,8 +1,9 @@
-package univlille.m1info.abd.phys;
+package univlille.m1info.abd.simplebd;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.schema.DefaultRelationSchema;
 import univlille.m1info.abd.schema.RelationSchema;
 
