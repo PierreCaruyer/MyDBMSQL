@@ -23,6 +23,7 @@ public class RenameOperator implements PhysicalOperator{
 	
 	@Override
 	public String[] nextTuple() {
+		//TODO reimplement method
 		return operator.nextTuple();
 	}
 
