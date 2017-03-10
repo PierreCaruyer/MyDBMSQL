@@ -17,7 +17,6 @@ public interface Page {
 	
 	public int getAddresspreviousPage ();
 	
-	
 	/**
 	 * 
 	 * @return the next tuple using the iterator

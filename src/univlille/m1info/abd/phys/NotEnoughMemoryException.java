@@ -8,4 +8,14 @@ package univlille.m1info.abd.phys;
  */
 public class NotEnoughMemoryException extends Exception {
 
+	private static final long serialVersionUID = -6314007225203951778L;
+
+	public NotEnoughMemoryException() {
+		super();
+	}
+	
+	@Override
+	public String toString() {
+		return "Not enough memory";
+	}
 }

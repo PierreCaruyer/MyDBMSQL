@@ -1,10 +1,11 @@
 package univlille.m1info.abd.simplebd;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 import univlille.m1info.abd.phys.MemoryManager;
-import univlille.m1info.abd.schema.DefaultRelationSchema;
+import univlille.m1info.abd.phys.NotEnoughMemoryException;
+import univlille.m1info.abd.phys.Page;
+import univlille.m1info.abd.phys.SchemawithMemory;
 import univlille.m1info.abd.schema.RelationSchema;
 
 public class DefaultRelation {
@@ -12,11 +13,13 @@ public class DefaultRelation {
 	private int firstPageAddress = -1;
 	private int lastPageAddress = -1;
 	private final RelationSchema schema;
-	private final MemoryManager mem ; 
+	private final MemoryManager mem;
+	private final int sortsCount;
 	
 	public DefaultRelation (RelationSchema schema, MemoryManager mem) {
 		this.schema = schema;
 		this.mem = mem;
+		this.sortsCount = schema.getSort().length;
 	}
 	
 	public RelationSchema getRelationSchema () {
@@ -39,7 +42,29 @@ public class DefaultRelation {
 		this.lastPageAddress = pageAddress;
 	}
 	
-    public void loadTuples(ArrayList<String> tuples){
-    // TODO Implement load Tuples into the MemoryManager mem; 
+    public void loadTuples(List<String[]> tuples){
+    	if(tuples.isEmpty())
+    		return;
+    	try {
+			Page currentPage = mem.NewPage(sortsCount), lastPage = null;
+			currentPage.SetPrevAdd(-1);
+			firstPageAddress = currentPage.getAddressPage();
+			for(int i = 0; i < tuples.size(); i++) {
+				if(currentPage.getNumberofTuple() == SchemawithMemory.PAGE_SIZE) {
+					lastPage = currentPage;
+					mem.releasePage(currentPage.getAddressPage(), true);
+					currentPage = mem.NewPage(sortsCount);
+					currentPage.SetPrevAdd(lastPage.getAddressPage());
+					lastPage.SetNextAdd(currentPage.getAddressPage());
+				}
+				currentPage.AddTuple(tuples.get(i));
+				if(i == tuples.size() - 1) {
+					mem.releasePage(currentPage.getAddressPage(), true);
+				}
+			}
+			lastPageAddress = currentPage.getAddressPage();
+		} catch (NotEnoughMemoryException e) {
+			e.printStackTrace();
+		}
     }
  }

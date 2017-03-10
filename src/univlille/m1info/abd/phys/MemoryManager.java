@@ -20,7 +20,7 @@ public interface MemoryManager {
 	 * @param pageAddress The address of the page to be loaded 
 	 * @return 
 	 */
-	public Page loadPage (int pageAddress) throws NotEnoughMemoryException ; //TODO raise an exception when no more free pages 
+	public Page loadPage (int pageAddress) throws NotEnoughMemoryException ;
 
 	
 	/**
