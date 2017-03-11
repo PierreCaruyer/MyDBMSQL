@@ -6,20 +6,14 @@ import java.util.HashMap;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class ProjectionOperator implements PhysicalOperator{
+public class ProjectionOperator extends FilterOperator implements PhysicalOperator{
 
 	private final RelationSchema schema;
-	private final MemoryManager mem;
 	private final String[] attributeNames;
-	private Page page, operatorPage;
-	private final PhysicalOperator operator;
-	private int operatorPageAddress;
-	private int operatorTupleCount;
 
 	public ProjectionOperator(PhysicalOperator operator, MemoryManager mem, String ... attrNames) {
+		super(operator, mem, attrNames.length);
 		attributeNames = attrNames;
-		this.operator = operator;
-		this.mem = mem;
 		operatorPageAddress = -1;
 		operatorTupleCount = 0;
 
@@ -59,38 +53,10 @@ public class ProjectionOperator implements PhysicalOperator{
 
 	@Override
 	public int nextPage() {
-		try {
-			if(operatorPage != null && operatorPage.getNumberofTuple() == operatorTupleCount) //If page is at end
-				updateOperatorPage(true);
-			else if(operatorPage == null)
-				updateOperatorPage(false);
-
-			if(operatorPageAddress < 0)
-				return operatorPageAddress;
-			
-			String[] tuple = new String[schema.getSort().length];
-			
-			while(page.getNumberofTuple() == SchemawithMemory.PAGE_SIZE && tuple != null) {
-				
-			}
-
-			return page.getAddressPage();
-		} catch (NotEnoughMemoryException e) {
-			return -2;
-		}
+		return super.nextPage();
 	}
 
-	private void updateOperatorPage(boolean release) throws NotEnoughMemoryException { //safely gets next operator's page
-		operatorPageAddress = operator.nextPage();
-		if(release)
-			mem.releasePage(operatorPage.getAddressPage(), false);
-		if(operatorPageAddress < 0)
-			operatorPage = null;
-		else
-			operatorPage = mem.loadPage(operatorPageAddress);
-	}
-
-	private String[] getNextPageTuple() {
+	protected String[] getComputedTuple() {
 		String[] currentTuple = operator.nextTuple();
 		HashMap<String,String> mapOperator = new HashMap<String, String>();
 		ArrayList<String> tuple = new ArrayList<String>();
