@@ -1,6 +1,8 @@
 package univlille.m1info.abd.phys;
 
-public abstract class FilterOperator implements PhysicalOperator{
+import univlille.m1info.abd.schema.RelationSchema;
+
+public abstract class FilterOperator implements PhysicalOperator{ // Equivalent to UnaryRAQUery
 	
 	protected int operatorTupleCount;
 	protected int operatorPageAddress;
@@ -16,6 +18,18 @@ public abstract class FilterOperator implements PhysicalOperator{
 		this.sortsLength = sortsLength;
 	}
 	
+	@Override
+	public abstract String[] nextTuple();
+	
+	@Override
+	public abstract RelationSchema resultSchema();
+	
+	@Override
+	public void reset() {
+		operator.reset();
+	}
+	
+	@Override
 	public int nextPage() {
 		try {
 			if(operatorPage != null && operatorPage.getNumberofTuple() == operatorTupleCount) //If page is at end

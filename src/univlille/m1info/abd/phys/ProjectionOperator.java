@@ -56,6 +56,7 @@ public class ProjectionOperator extends FilterOperator implements PhysicalOperat
 		return super.nextPage();
 	}
 
+	@Override
 	protected String[] getComputedTuple() {
 		String[] currentTuple = operator.nextTuple();
 		HashMap<String,String> mapOperator = new HashMap<String, String>();

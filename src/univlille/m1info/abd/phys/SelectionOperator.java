@@ -74,6 +74,7 @@ public class SelectionOperator extends FilterOperator implements PhysicalOperato
 		return super.nextPage();
 	}
 	
+	@Override
 	protected String[] getComputedTuple() {
 		String[] tuple = operatorPage.nextTuple();
 		operatorTupleCount++;

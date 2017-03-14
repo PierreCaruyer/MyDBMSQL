@@ -33,7 +33,7 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 
 	@Override
 	public void reset() {
-		mem.releasePage(currentPageIndex, false);
+		mem.releasePage(currentPageIndex, true);
 		currentPageIndex = relation.getFirstPageAddress();
 		try {
 			currentPage = mem.loadPage(currentPageIndex);
@@ -44,6 +44,8 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 
 	@Override
 	public int nextPage() {
+		if(currentPage.getAddressPage() == relation.getFirstPageAddress())
+			return currentPage.getAddressPage();
 		return currentPage.getAddressnextPage();
 	}
 }

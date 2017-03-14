@@ -40,6 +40,7 @@ public class RenameOperator extends FilterOperator implements PhysicalOperator{
 		return super.nextPage();
 	}
 	
+	@Override
 	protected String[] getComputedTuple() {
 		return nextTuple();
 	}

@@ -50,6 +50,7 @@ public class DefaultRelation {
 			currentPage.SetPrevAdd(-1);
 			firstPageAddress = currentPage.getAddressPage();
 			for(int i = 0; i < tuples.size(); i++) {
+				currentPage.AddTuple(tuples.get(i));
 				if(currentPage.getNumberofTuple() == SchemawithMemory.PAGE_SIZE) {
 					lastPage = currentPage;
 					mem.releasePage(currentPage.getAddressPage(), true);
@@ -57,8 +58,7 @@ public class DefaultRelation {
 					currentPage.SetPrevAdd(lastPage.getAddressPage());
 					lastPage.SetNextAdd(currentPage.getAddressPage());
 				}
-				currentPage.AddTuple(tuples.get(i));
-				if(i == tuples.size() - 1) {
+				else if(i == tuples.size() - 1) {
 					mem.releasePage(currentPage.getAddressPage(), true);
 				}
 			}
