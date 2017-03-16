@@ -1,7 +1,10 @@
 package univlille.m1info.abd.tp3;
 
+import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.PhysicalOperator;
+import univlille.m1info.abd.phys.ProjectionOperator;
 import univlille.m1info.abd.phys.RenameOperator;
+import univlille.m1info.abd.phys.SelectionOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
 import univlille.m1info.abd.ra.JoinQuery;
 import univlille.m1info.abd.ra.ProjectionQuery;
@@ -15,7 +18,7 @@ import univlille.m1info.abd.simplebd.SimpleSGBD;
 
 public class TP3 {
 	/** Creates an operator that allows to (efficiently) execute the given operation on the given database. */
-	/*public PhysicalOperator getOperator(RAQuery query, SimpleSGBD sgbd) {
+	public PhysicalOperator getOperator(RAQuery query, SimpleSGBD sgbd) {
 		PhysicalOperator operator;
 		if(!(query instanceof ProjectionQuery) && !(query instanceof SelectionQuery) && !(query instanceof JoinQuery) && !(query instanceof RenameQuery)) {
 			throw new UnsupportedOperationException("Unrecognized query type : " + query.getClass().getName());
@@ -27,7 +30,7 @@ public class TP3 {
 			
 			relationNameQuery = getRelationNameSubQuery(projection);
 			sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
-			operator = new PreviousProjectionOperator(sequence, projection.getProjectedAttributesNames());
+			operator = new ProjectionOperator(sequence, projection.getProjectedAttributesNames());
 		}
 		else if(query instanceof SelectionQuery) {
 			SelectionQuery selection = (SelectionQuery)query;
@@ -36,7 +39,7 @@ public class TP3 {
 			
 			relationNameQuery = getRelationNameSubQuery(selection);
 			sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
-			operator = new PreviousSelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator());
+			operator = new SelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator());
 		}
 		else if(query instanceof RenameQuery) {
 			RenameQuery rename = (RenameQuery)query;
@@ -55,7 +58,7 @@ public class TP3 {
 			rightSequence = getSequentialAccessFromRelationName(sgbd, rightRelationNameQuery.getRelationName());
 			leftSequence = getSequentialAccessFromRelationName(sgbd, leftRelationNameQuery.getRelationName());
 			
-			operator = new PreviousJoinOperator(rightSequence, leftSequence);
+			operator = new JoinOperator(rightSequence, leftSequence);
 		}
 		return operator;
 	}
@@ -99,5 +102,5 @@ public class TP3 {
 			return (RelationNameQuery)subQuery;
 		
 		return getRelationNameSubQuery((UnaryRAQuery)subQuery);
-	}*/
+	}
 }

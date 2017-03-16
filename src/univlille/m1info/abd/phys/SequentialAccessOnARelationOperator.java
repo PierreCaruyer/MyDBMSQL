@@ -1,29 +1,23 @@
 
 package univlille.m1info.abd.phys;
 
-import java.util.List;
-
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.simplebd.DefaultRelation;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleSGBD;
 
 public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 
-	private final DefaultRelation relation;
-	private int currentPageIndex = -1;
-	private Page currentPage;
 	private final RelationSchema schema;
-	private final MemoryManager mem;
+	private final SimpleDBRelation relation;
 	
-	public SequentialAccessOnARelationOperator(DefaultRelation relation, List<String[]> tuples, MemoryManager mem, RelationSchema schema) {
-		this.schema = schema;
-		this.mem = mem;
-		this.relation = relation;
-		relation.loadTuples(tuples);
+	public SequentialAccessOnARelationOperator(SimpleSGBD sgbd, String relname) {
+		relation = sgbd.getRelation(relname);
+		schema = relation.getRelationSchema();
 	}
 	
 	@Override
 	public String[] nextTuple() {
-		return currentPage.nextTuple();
+		return relation.nextTuple();
 	}
 
 	@Override
@@ -33,17 +27,11 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 
 	@Override
 	public void reset() {
-		mem.releasePage(currentPageIndex, false);
-		currentPageIndex = relation.getFirstPageAddress();
-		try {
-			currentPage = mem.loadPage(currentPageIndex);
-		} catch (NotEnoughMemoryException e) {
-			e.printStackTrace();
-		}
+		relation.switchToReadMode();
 	}
 
 	@Override
 	public int nextPage() {
-		return currentPage.getAddressnextPage();
+		return -1;
 	}
 }

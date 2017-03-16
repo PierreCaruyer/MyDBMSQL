@@ -21,7 +21,7 @@ import univlille.m1info.abd.simplebd.SimpleSGBD;
 
 public class TestTP3 {
 
-	/*private TP3 tp3;
+	private TP3 tp3;
 	@Before
 	public void setUp () {
 		this.tp3 = new TP3();
@@ -293,5 +293,5 @@ public class TestTP3 {
 				return true;
 		return false;
 	}
-*/
+
 }
