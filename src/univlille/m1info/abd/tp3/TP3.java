@@ -18,7 +18,7 @@ import univlille.m1info.abd.simplebd.SimpleSGBD;
 
 public class TP3 {
 	/** Creates an operator that allows to (efficiently) execute the given operation on the given database. */
-	public PhysicalOperator getOperator(RAQuery query, SimpleSGBD sgbd) {
+	/*public PhysicalOperator getOperator(RAQuery query, SimpleSGBD sgbd) {
 		PhysicalOperator operator;
 		if(!(query instanceof ProjectionQuery) && !(query instanceof SelectionQuery) && !(query instanceof JoinQuery) && !(query instanceof RenameQuery)) {
 			throw new UnsupportedOperationException("Unrecognized query type : " + query.getClass().getName());
@@ -102,5 +102,5 @@ public class TP3 {
 			return (RelationNameQuery)subQuery;
 		
 		return getRelationNameSubQuery((UnaryRAQuery)subQuery);
-	}
+	}*/
 }

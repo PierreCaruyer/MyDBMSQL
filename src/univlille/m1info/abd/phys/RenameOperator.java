@@ -3,14 +3,13 @@ package univlille.m1info.abd.phys;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class RenameOperator implements PhysicalOperator{
+public class RenameOperator extends FilterOperator implements PhysicalOperator{
 
-	PhysicalOperator operator;
-	String[] attrNames = null;
-	RelationSchema schema = null;
+	private String[] attrNames = null;
+	private RelationSchema schema = null;
 	
-	public RenameOperator(PhysicalOperator operator, String attrName, String renamedAttribute) {
-		this.operator = operator;
+	public RenameOperator(PhysicalOperator operator, String attrName, String renamedAttribute, MemoryManager mem) {
+		super(operator, mem, operator.resultSchema().getSort().length);
 		
 		String[] sorts = operator.resultSchema().getSort();
 		attrNames = new String[sorts.length];
@@ -38,8 +37,12 @@ public class RenameOperator implements PhysicalOperator{
 
 	@Override
 	public int nextPage() {
-		// TODO Auto-generated method stub
-		return 0;
+		return super.nextPage();
+	}
+	
+	@Override
+	protected String[] getComputedTuple() {
+		return nextTuple();
 	}
 
 }

@@ -6,15 +6,18 @@ import java.util.HashMap;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class ProjectionOperator implements PhysicalOperator{
+public class ProjectionOperator extends FilterOperator implements PhysicalOperator{
 
 	private final RelationSchema schema;
 	private final String[] attributeNames;
 	private final PhysicalOperator operator;
 
-	public ProjectionOperator(PhysicalOperator operator, String ... attrNames) {
-		attributeNames = attrNames;
+	public ProjectionOperator(PhysicalOperator operator, MemoryManager mem, String ... attrNames) {
+		super(operator, mem, attrNames.length);
 		this.operator = operator;
+		attributeNames = attrNames;
+		operatorPageAddress = -1;
+		operatorTupleCount = 0;
 
 		schema = new VolatileRelationSchema(attrNames);
 	}
@@ -52,6 +55,28 @@ public class ProjectionOperator implements PhysicalOperator{
 
 	@Override
 	public int nextPage() {
-		return -1;
+		return super.nextPage();
+	}
+
+	@Override
+	protected String[] getComputedTuple() {
+		String[] currentTuple = operator.nextTuple();
+		HashMap<String,String> mapOperator = new HashMap<String, String>();
+		ArrayList<String> tuple = new ArrayList<String>();
+		operatorTupleCount++;
+		
+		if(currentTuple == null)
+			return null;
+
+		String[] sorts = operator.resultSchema().getSort();
+
+		for (int i=0; i < sorts.length; i++){
+			mapOperator.put(sorts[i], currentTuple[i]);
+		}
+
+		for (String attr : attributeNames){
+			tuple.add(mapOperator.get(attr));
+		}
+		return tuple.toArray(new String[attributeNames.length]);
 	}
 }

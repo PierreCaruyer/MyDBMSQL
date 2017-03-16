@@ -4,7 +4,7 @@ import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class SelectionOperator implements PhysicalOperator {
+public class SelectionOperator extends FilterOperator implements PhysicalOperator {
 
 	private final ComparisonOperator comparator;
 	private final String constantValue;
@@ -12,11 +12,12 @@ public class SelectionOperator implements PhysicalOperator {
 	private final RelationSchema schema;
 	private final PhysicalOperator operator;
 
-	public SelectionOperator(PhysicalOperator operator, String attrName, String constantValue, ComparisonOperator comparator) {
+	public SelectionOperator(PhysicalOperator operator, String attrName, String constantValue, ComparisonOperator comparator, MemoryManager mem) {
+		super(operator, mem, operator.resultSchema().getSort().length);
 		this.constantValue = constantValue;
 		this.comparator = comparator;
 		this.operator = operator;
-		
+
 		String[] sorts = operator.resultSchema().getSort();
 		schema = new VolatileRelationSchema(sorts);
 
@@ -70,6 +71,17 @@ public class SelectionOperator implements PhysicalOperator {
 
 	@Override
 	public int nextPage() {
-		return -1;
+		return super.nextPage();
+	}
+	
+	@Override
+	protected String[] getComputedTuple() {
+		String[] tuple = operatorPage.nextTuple();
+		operatorTupleCount++;
+		while(tuple != null && !computeComparison(tuple[attributeIndex], constantValue)) {
+			tuple = operator.nextTuple();
+			operatorTupleCount++;
+		}
+		return tuple;
 	}
 }

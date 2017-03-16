@@ -1,27 +1,8 @@
 package univlille.m1info.abd.tp3;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import univlille.m1info.abd.phys.PhysicalOperator;
-import univlille.m1info.abd.ra.ComparisonOperator;
-import univlille.m1info.abd.ra.JoinQuery;
-import univlille.m1info.abd.ra.ProjectionQuery;
-import univlille.m1info.abd.ra.RAQuery;
-import univlille.m1info.abd.ra.RelationNameQuery;
-import univlille.m1info.abd.ra.SelectionQuery;
-import univlille.m1info.abd.simplebd.SimpleDBRelation;
-import univlille.m1info.abd.simplebd.SimpleSGBD;
-
 public class TestTP3 {
 
-	private TP3 tp3;
+	/*private TP3 tp3;
 	@Before
 	public void setUp () {
 		this.tp3 = new TP3();
@@ -292,6 +273,6 @@ public class TestTP3 {
 			if (Arrays.equals(el, tuple))
 				return true;
 		return false;
-	}
+	}*/
 
 }

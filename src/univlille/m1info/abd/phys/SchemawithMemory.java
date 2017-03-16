@@ -11,8 +11,8 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 	/** The size of a page, in number tuples. */
 	public static final int PAGE_SIZE = 20;
 	public static final int ATTRIBUTE_SIZE = 20;
-	public static final MemoryManager mem =  new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE) ;
-	private Map<String, Map<String,Index>> index ;
+	public static final MemoryManager mem =  new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
+	private Map<String, Map<String,Index>> index;
 /**
  * 
  * @param schema
@@ -21,8 +21,7 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 	
 	@Override
 	protected DefaultRelation newRelation(RelationSchema schema) {
-		// TODO Auto-generated method stub
-		return null;
+		return new DefaultRelation(schema, mem);
 	}
 
 	
@@ -57,5 +56,5 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 	public void FillRelation (String relationname, String[] tuples){
 		//TODO
 	}
-	}
+}
 	
