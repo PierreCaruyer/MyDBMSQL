@@ -59,6 +59,7 @@ public class DefaultRelation {
 					lastPage.SetNextAdd(currentPage.getAddressPage());
 				}
 				else if(i == tuples.size() - 1) {
+					mem.PutinMemory(currentPage, currentPage.getAddressPage());
 					mem.releasePage(currentPage.getAddressPage(), true);
 				}
 			}

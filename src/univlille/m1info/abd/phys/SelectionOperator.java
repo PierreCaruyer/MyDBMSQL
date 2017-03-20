@@ -24,8 +24,10 @@ public class SelectionOperator extends FilterOperator implements PhysicalOperato
 		for(int i = 0; i < sorts.length && attributeIndex < 0; i++)
 			if(sorts[i].equals(attrName))
 				attributeIndex = i;
+		
+		System.out.println(attributeIndex);
 	}
-
+	
 	@Override
 	public String[] nextTuple() {
 		String[] tuple = operator.nextTuple();

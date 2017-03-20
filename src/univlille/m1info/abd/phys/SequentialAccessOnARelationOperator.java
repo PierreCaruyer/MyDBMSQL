@@ -9,18 +9,27 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 	private final DefaultRelation relation;
 	private final RelationSchema schema;
 	private final MemoryManager mem;
-	private int currentPageAdress;
-	
-	public SequentialAccessOnARelationOperator(DefaultRelation relation, MemoryManager mem, RelationSchema schema) {
+	private int pageAddress = -1;
+
+	public SequentialAccessOnARelationOperator(DefaultRelation relation, MemoryManager mem) {
 		this.relation = relation;
-		this.schema = schema;
 		this.mem = mem;
-		currentPageAdress = relation.getFirstPageAddress();
+		this.schema = relation.getRelationSchema();
+		pageAddress = relation.getFirstPageAddress();
 	}
-	
+
 	@Override
 	public String[] nextTuple() {
-		return null;
+		try {
+			Page page = mem.loadPage(pageAddress);
+			if(page == null)
+				return null;
+			String[] tuple = page.nextTuple();
+			mem.releasePage(page.getAddressPage(), false);
+			return tuple;
+		} catch (NotEnoughMemoryException e) {
+			return null;
+		}
 	}
 
 	@Override
@@ -30,14 +39,19 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 
 	@Override
 	public void reset() {
+		pageAddress = -1;
 	}
 
 	@Override
 	public int nextPage() {
 		try {
-			return mem.loadPage(currentPageAdress).getAddressPage();
+			Page currentPage = mem.loadPage(pageAddress);
+			int nextPageAddress = currentPage.getAddressnextPage();
+			mem.releasePage(pageAddress, true);
+			pageAddress = nextPageAddress;
+			return pageAddress;
 		} catch (NotEnoughMemoryException e) {
-			return -1;
+			return -2;
 		}
 	}
 }
