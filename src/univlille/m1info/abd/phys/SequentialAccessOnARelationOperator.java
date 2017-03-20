@@ -2,8 +2,6 @@
 package univlille.m1info.abd.phys;
 
 import univlille.m1info.abd.memorydb.DefaultRelation;
-import univlille.m1info.abd.memorydb.NotEnoughMemoryException;
-import univlille.m1info.abd.memorydb.Page;
 import univlille.m1info.abd.schema.RelationSchema;
 
 public class SequentialAccessOnARelationOperator implements PhysicalOperator{

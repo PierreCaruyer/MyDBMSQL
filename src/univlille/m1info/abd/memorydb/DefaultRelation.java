@@ -3,6 +3,8 @@ package univlille.m1info.abd.memorydb;
 import java.util.List;
 
 import univlille.m1info.abd.phys.MemoryManager;
+import univlille.m1info.abd.phys.NotEnoughMemoryException;
+import univlille.m1info.abd.phys.Page;
 import univlille.m1info.abd.schema.RelationSchema;
 
 public class DefaultRelation {

@@ -8,9 +8,9 @@ import java.util.List;
 import org.junit.Test;
 
 import univlille.m1info.abd.memorydb.DefaultRelation;
-import univlille.m1info.abd.memorydb.NotEnoughMemoryException;
-import univlille.m1info.abd.memorydb.Page;
 import univlille.m1info.abd.phys.MemoryManager;
+import univlille.m1info.abd.phys.NotEnoughMemoryException;
+import univlille.m1info.abd.phys.Page;
 import univlille.m1info.abd.phys.ProjectionOperator;
 import univlille.m1info.abd.phys.SelectionOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;

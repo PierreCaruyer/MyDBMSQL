@@ -3,6 +3,7 @@ package univlille.m1info.abd.phys;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import univlille.m1info.abd.memorydb.SchemawithMemory;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
@@ -18,6 +19,9 @@ public class JoinOperator implements PhysicalOperator {
 	private final String[] leftSorts;
 	private final String[] rightSorts;
 	private final MemoryManager mem;
+
+	private int leftPageAddress = -1;
+	private int rightPageAddress = -1;
 
 	public JoinOperator(PhysicalOperator right, PhysicalOperator left, MemoryManager mem) {
 		this.left = left;
@@ -80,7 +84,55 @@ public class JoinOperator implements PhysicalOperator {
 
 	@Override
 	public int nextPage() {
-		return -1;
+		if (leftPageAddress < 0)
+			leftPageAddress = left.nextPage();
+		if (leftPageAddress < 0)
+			return leftPageAddress;
+		if (rightPageAddress < 0) {
+			rightPageAddress = right.nextPage();
+			if (rightPageAddress < 0) {
+				right.reset();
+				rightPageAddress = right.nextPage();
+				if (rightPageAddress < 0)
+					return rightPageAddress;
+			}
+		}
+		try {
+			int prevPageAddress = -1;
+			Page leftPage = mem.loadPage(leftPageAddress);
+			leftPage.switchToReadMode();
+			Page page = mem.NewPage(joinSorts.size());
+			String[] leftTuple = null, tuple = null, firstLeftTuple = null, rightTuple = null;
+
+			while (page.getNumberofTuple() != SchemawithMemory.PAGE_SIZE && prevPageAddress != leftPageAddress) {
+				leftTuple = leftPage.nextTuple();
+
+				if (leftTuple == firstLeftTuple || leftTuple == null) {
+					mem.releasePage(leftPageAddress, false);
+					prevPageAddress = leftPageAddress;
+					leftPageAddress = left.nextPage();
+					if (leftPageAddress < 0)
+						break;
+					leftPage = mem.loadPage(leftPageAddress);
+					leftPage.switchToReadMode();
+					continue;
+				}
+
+				if (firstLeftTuple == null)
+					firstLeftTuple = leftTuple;
+
+				tuple = getComputedTuples(leftTuple, rightTuple);
+				if (tuple == null)
+					continue;
+				page.AddTuple(tuple);
+			}
+			mem.PutinMemory(page, page.getAddressPage());
+			mem.releasePage(page.getAddressPage(), false);
+
+			return page.getAddressPage();
+		} catch (NotEnoughMemoryException e) {
+			return -2;
+		}
 	}
 
 	private String[] getComputedTuples(String[] tuple1, String[] tuple2) {

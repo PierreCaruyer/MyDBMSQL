@@ -1,4 +1,4 @@
-package univlille.m1info.abd.memorydb;
+package univlille.m1info.abd.phys;
 
 /** This object gives a representation of a page allowing to manipulate directly the tuples.
  * 

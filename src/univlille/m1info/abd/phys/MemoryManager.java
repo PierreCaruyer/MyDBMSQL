@@ -1,8 +1,5 @@
 package univlille.m1info.abd.phys;
 
-import univlille.m1info.abd.memorydb.NotEnoughMemoryException;
-import univlille.m1info.abd.memorydb.Page;
-
 /** Simulates main memory with limited number of pages that are available for being used by an DBMS.
  * The number of pages is given by SGBD.MEMORY_SIZE
  * 

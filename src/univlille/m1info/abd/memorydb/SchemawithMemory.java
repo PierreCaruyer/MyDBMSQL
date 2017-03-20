@@ -1,6 +1,5 @@
 package univlille.m1info.abd.memorydb;
 
-
 import java.util.Map;
 
 import univlille.m1info.abd.index.Index;
