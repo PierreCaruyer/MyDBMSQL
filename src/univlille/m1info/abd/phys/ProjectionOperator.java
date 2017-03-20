@@ -25,22 +25,7 @@ public class ProjectionOperator extends FilterOperator implements PhysicalOperat
 	@Override
 	public String[] nextTuple() {
 		String[] currentTuple = operator.nextTuple();
-		HashMap<String,String> mapOperator = new HashMap<String, String>();
-		ArrayList<String> tuple = new ArrayList<String>();
-
-		if(currentTuple == null)
-			return null;
-
-		String[] sorts = operator.resultSchema().getSort();
-
-		for (int i=0; i < sorts.length; i++){
-			mapOperator.put(sorts[i], currentTuple[i]);
-		}
-
-		for (String attr : attributeNames){
-			tuple.add(mapOperator.get(attr));
-		}
-		return tuple.toArray(new String[attributeNames.length]);
+		return getComputedTuple(currentTuple);
 	}
 
 	@Override
@@ -59,11 +44,9 @@ public class ProjectionOperator extends FilterOperator implements PhysicalOperat
 	}
 
 	@Override
-	protected String[] getComputedTuple() {
-		String[] currentTuple = operator.nextTuple();
+	protected String[] getComputedTuple(String[] currentTuple) {
 		HashMap<String,String> mapOperator = new HashMap<String, String>();
 		ArrayList<String> tuple = new ArrayList<String>();
-		operatorTupleCount++;
 		
 		if(currentTuple == null)
 			return null;

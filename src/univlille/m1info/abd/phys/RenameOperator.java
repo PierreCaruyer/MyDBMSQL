@@ -41,8 +41,8 @@ public class RenameOperator extends FilterOperator implements PhysicalOperator{
 	}
 	
 	@Override
-	protected String[] getComputedTuple() {
-		return nextTuple();
+	protected String[] getComputedTuple(String[] tuple) {
+		return tuple;
 	}
 
 }

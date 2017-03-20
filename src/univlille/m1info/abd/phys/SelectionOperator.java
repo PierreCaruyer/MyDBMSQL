@@ -75,13 +75,9 @@ public class SelectionOperator extends FilterOperator implements PhysicalOperato
 	}
 	
 	@Override
-	protected String[] getComputedTuple() {
-		String[] tuple = operatorPage.nextTuple();
-		operatorTupleCount++;
-		while(tuple != null && !computeComparison(tuple[attributeIndex], constantValue)) {
-			tuple = operator.nextTuple();
-			operatorTupleCount++;
-		}
-		return tuple;
+	protected String[] getComputedTuple(String[] tuple) {
+		if(computeComparison(tuple[attributeIndex], constantValue))
+			return tuple;
+		return null;
 	}
 }
