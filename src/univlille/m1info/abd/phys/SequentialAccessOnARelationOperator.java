@@ -4,7 +4,7 @@ package univlille.m1info.abd.phys;
 import univlille.m1info.abd.memorydb.DefaultRelation;
 import univlille.m1info.abd.schema.RelationSchema;
 
-public class SequentialAccessOnARelationOperator implements PhysicalOperator{
+public class SequentialAccessOnARelationOperator implements PhysicalOperator {
 
 	private final DefaultRelation relation;
 	private final RelationSchema schema;
@@ -22,7 +22,7 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 	public String[] nextTuple() {
 		try {
 			Page page = mem.loadPage(pageAddress);
-			if(page == null)
+			if (page == null)
 				return null;
 			String[] tuple = page.nextTuple();
 			mem.releasePage(page.getAddressPage(), false);
@@ -45,10 +45,13 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator{
 	@Override
 	public int nextPage() {
 		try {
-			Page currentPage = mem.loadPage(pageAddress);
-			int nextPageAddress = currentPage.getAddressnextPage();
-			mem.releasePage(pageAddress, true);
-			pageAddress = nextPageAddress;
+			if (pageAddress > -1) {
+				Page currentPage = mem.loadPage(pageAddress);
+				int nextPageAddress = currentPage.getAddressnextPage();
+				mem.releasePage(pageAddress, true);
+				pageAddress = nextPageAddress;
+			} else
+				pageAddress = relation.getFirstPageAddress();
 			return pageAddress;
 		} catch (NotEnoughMemoryException e) {
 			return -2;

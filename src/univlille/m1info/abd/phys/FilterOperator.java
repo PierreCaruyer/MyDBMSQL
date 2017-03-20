@@ -30,7 +30,7 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 	
 	@Override
 	public int nextPage() {
-		if(operatorPageAddress < 0)
+		if(operatorPageAddress < 0) //page address hasn't been initialized
 			operatorPageAddress = operator.nextPage();
 		if(operatorPageAddress < 0)
 			return operatorPageAddress;
@@ -41,9 +41,11 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 			Page page = mem.NewPage(sortsLength);
 			String[] operatorTuple = null, tuple = null, firstTuple = null;
 			
+			//Goes on until page is full
 			while(page.getNumberofTuple() != SchemawithMemory.PAGE_SIZE && prevPageAddress != operatorPageAddress) {
 				operatorTuple = operatorPage.nextTuple();
 				
+				//Page.nextTuple() loops : when it reaches its end, it rewinds to the first tuple of the page 
 				if(operatorTuple == firstTuple || operatorTuple == null) {
 					mem.releasePage(operatorPageAddress, false);
 					prevPageAddress = operatorPageAddress;
@@ -55,16 +57,18 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 					continue;
 				}
 				
+				//Sets the first tuple of the current page
 				if(firstTuple == null)
 					firstTuple = operatorTuple;
 				
 				tuple = getComputedTuple(operatorTuple);
+				//if computation failed
 				if(tuple == null)
 					continue;
 				page.AddTuple(tuple);
 			}
-			mem.PutinMemory(page, page.getAddressPage());
-			mem.releasePage(page.getAddressPage(), false);
+			mem.PutinMemory(page, page.getAddressPage());//page update since it has been modified
+			mem.releasePage(page.getAddressPage(), false); //freeing memory
 			
 			return page.getAddressPage();
 		} catch (NotEnoughMemoryException e) {

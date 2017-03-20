@@ -21,7 +21,7 @@ public interface Page {
 	 * 
 	 * @return the next tuple using the iterator
 	 */
-	public String[] nextTuple ();
+	public String[] nextTuple();
 	
 	/**
 	 * 
