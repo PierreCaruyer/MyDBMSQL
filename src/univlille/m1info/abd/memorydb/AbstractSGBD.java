@@ -1,4 +1,4 @@
-package univlille.m1info.abd.phys;
+package univlille.m1info.abd.memorydb;
 
 import java.util.HashMap;
 import java.util.Map;

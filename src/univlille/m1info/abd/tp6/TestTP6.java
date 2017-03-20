@@ -7,21 +7,21 @@ import java.util.List;
 
 import org.junit.Test;
 
+import univlille.m1info.abd.memorydb.DefaultRelation;
+import univlille.m1info.abd.memorydb.NotEnoughMemoryException;
+import univlille.m1info.abd.memorydb.Page;
 import univlille.m1info.abd.phys.MemoryManager;
-import univlille.m1info.abd.phys.NotEnoughMemoryException;
-import univlille.m1info.abd.phys.Page;
-import univlille.m1info.abd.phys.PhysicalOperator;
+import univlille.m1info.abd.phys.ProjectionOperator;
 import univlille.m1info.abd.phys.SelectionOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
 import univlille.m1info.abd.phys.SimpleMemoryManager;
 import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.DefaultRelationSchema;
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.simplebd.DefaultRelation;
 
 public class TestTP6 {
 
-	public SelectionOperator getSelectionOperator(MemoryManager mem) {
+	public SequentialAccessOnARelationOperator getLoadedTable(MemoryManager mem) {
 		RelationSchema schema = new DefaultRelationSchema("REL", new String[]{"attrA", "attrB", "attrC"});
 		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
@@ -29,19 +29,25 @@ public class TestTP6 {
 		tuples.add(new String[]{"a1", "b4", "c6"});
 		tuples.add(new String[]{"a2", "b5", "c2"});
 		relation.loadTuples(tuples);
-		PhysicalOperator tableRelation = new SequentialAccessOnARelationOperator(relation, mem);
-		SelectionOperator operator = new SelectionOperator(tableRelation, "attrA", "a5", ComparisonOperator.EQUAL, mem);
-		return operator;
+		SequentialAccessOnARelationOperator tableRelation = new SequentialAccessOnARelationOperator(relation, mem);
+		return tableRelation;
+	}
+	
+	public SelectionOperator getSelectionOperator(MemoryManager mem) {
+		return new SelectionOperator(getLoadedTable(mem), "attrA", "a5", ComparisonOperator.EQUAL, mem);
+	}
+	
+	public ProjectionOperator getProjectionOperator(MemoryManager mem) {
+		return new ProjectionOperator(getLoadedTable(mem), mem, new String[]{"attrA", "attrC"});
 	}
 	
 	@Test
-	public void testSelectionOperatorWithMemory() {
+	public void testCorrectSelectionOperatorWithMemory() {
 		int PAGE_SIZE = 20;
 		int ATTRIBUTE_SIZE = 20;
-		MemoryManager mem =  new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
+		MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
 		SelectionOperator selection = getSelectionOperator(mem);
 		int page = selection.nextPage();
-		System.out.println(page);
 		try {
 			Page p = mem.loadPage(page);
 			p.switchToReadMode();
@@ -51,9 +57,35 @@ public class TestTP6 {
 				tupleArray.add(nextTuple);
 				nextTuple = p.nextTuple();
 			}
-			String[] expectedTuple = new String[]{"a5", "b1", "c3"};
 			List<String[]> expectedArray = new ArrayList<>();
-			expectedArray.add(expectedTuple);
+			expectedArray.add(new String[]{"a5", "b1", "c3"});
+			
+			assertTrue(pageContentEquals(expectedArray, tupleArray));
+		} catch (NotEnoughMemoryException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testCorrectProjectionOperatorWithMemory() {
+		int PAGE_SIZE = 20;
+		int ATTRIBUTE_SIZE = 20;
+		MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
+		ProjectionOperator selection = getProjectionOperator(mem);
+		int page = selection.nextPage();
+		try {
+			Page p = mem.loadPage(page);
+			p.switchToReadMode();
+			String[] nextTuple = p.nextTuple();
+			List<String[]> tupleArray = new ArrayList<>();
+			while(nextTuple != null) {
+				tupleArray.add(nextTuple);
+				nextTuple = p.nextTuple();
+			}
+			List<String[]> expectedArray = new ArrayList<>();
+			expectedArray.add(new String[]{"a5", "c3"});
+			expectedArray.add(new String[]{"a1", "c6"});
+			expectedArray.add(new String[]{"a2", "c2"});
 			
 			assertTrue(pageContentEquals(expectedArray, tupleArray));
 		} catch (NotEnoughMemoryException e) {

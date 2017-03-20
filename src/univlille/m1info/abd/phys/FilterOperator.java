@@ -1,5 +1,8 @@
 package univlille.m1info.abd.phys;
 
+import univlille.m1info.abd.memorydb.NotEnoughMemoryException;
+import univlille.m1info.abd.memorydb.Page;
+import univlille.m1info.abd.memorydb.SchemawithMemory;
 import univlille.m1info.abd.schema.RelationSchema;
 
 public abstract class FilterOperator implements PhysicalOperator{ // Equivalent to UnaryRAQUery
@@ -40,13 +43,15 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 			Page page = mem.NewPage(sortsLength);
 			String[] operatorTuple = null, tuple = null, firstTuple = null;
 			
-			while(page.getNumberofTuple() != SchemawithMemory.PAGE_SIZE && operatorPageAddress > -1 && prevPageAddress != operatorPageAddress) {
+			while(page.getNumberofTuple() != SchemawithMemory.PAGE_SIZE && prevPageAddress != operatorPageAddress) {
 				operatorTuple = operatorPage.nextTuple();
 				
 				if(operatorTuple == firstTuple || operatorTuple == null) {
 					mem.releasePage(operatorPageAddress, false);
 					prevPageAddress = operatorPageAddress;
 					operatorPageAddress = operator.nextPage();
+					if(operatorPageAddress < 0)
+						break;
 					operatorPage = mem.loadPage(operatorPageAddress);
 					operatorPage.switchToReadMode();
 					continue;

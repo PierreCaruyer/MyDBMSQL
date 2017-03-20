@@ -1,11 +1,8 @@
-package univlille.m1info.abd.simplebd;
+package univlille.m1info.abd.memorydb;
 
 import java.util.List;
 
 import univlille.m1info.abd.phys.MemoryManager;
-import univlille.m1info.abd.phys.NotEnoughMemoryException;
-import univlille.m1info.abd.phys.Page;
-import univlille.m1info.abd.phys.SchemawithMemory;
 import univlille.m1info.abd.schema.RelationSchema;
 
 public class DefaultRelation {
@@ -53,6 +50,7 @@ public class DefaultRelation {
 				currentPage.AddTuple(tuples.get(i));
 				if(currentPage.getNumberofTuple() == SchemawithMemory.PAGE_SIZE) {
 					lastPage = currentPage;
+					mem.PutinMemory(currentPage, currentPage.getAddressPage());
 					mem.releasePage(currentPage.getAddressPage(), true);
 					currentPage = mem.NewPage(sortsCount);
 					currentPage.SetPrevAdd(lastPage.getAddressPage());

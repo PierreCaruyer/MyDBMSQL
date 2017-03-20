@@ -1,4 +1,4 @@
-package univlille.m1info.abd.phys;
+package univlille.m1info.abd.memorydb;
 
 /** The exception indicates that the SGBD does not have free in-memory buffer for loading a new page.
  * 

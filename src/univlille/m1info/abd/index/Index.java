@@ -1,4 +1,4 @@
-package univlille.m1info.abd.phys;
+package univlille.m1info.abd.index;
 
 import java.util.Iterator;
 

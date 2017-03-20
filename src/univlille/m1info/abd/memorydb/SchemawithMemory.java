@@ -1,9 +1,12 @@
-package univlille.m1info.abd.phys;
+package univlille.m1info.abd.memorydb;
+
 
 import java.util.Map;
 
+import univlille.m1info.abd.index.Index;
+import univlille.m1info.abd.phys.MemoryManager;
+import univlille.m1info.abd.phys.SimpleMemoryManager;
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.simplebd.DefaultRelation;
 
 public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 
