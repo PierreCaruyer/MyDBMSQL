@@ -170,7 +170,6 @@ public class JoinOperator implements PhysicalOperator {
 		for (String attr : inter) {
 			String value1 = schemaLeft.getAttributeValue(tuple1, attr);
 			String value2 = schemaRight.getAttributeValue(tuple2, attr);
-			System.out.println(value1 + " " + value2);
 			if (value1 != value2) {
 				isJoin = false;
 				break;
