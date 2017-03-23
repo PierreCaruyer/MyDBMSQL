@@ -42,7 +42,7 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 			String[] operatorTuple = null, tuple = null, firstTuple = null;
 			
 			//Goes on until page is full
-			while(page.getNumberofTuple() != SchemawithMemory.PAGE_SIZE && operatorPageAddress > -1 && prevPageAddress != operatorPageAddress) {
+			while(page.getNumberofTuple() != SchemawithMemory.PAGE_SIZE && prevPageAddress != operatorPageAddress) {
 				operatorTuple = operatorPage.nextTuple();
 				
 				/*Page.nextTuple() loops : when it reaches its end, it rewinds to the first tuple of the page
@@ -54,7 +54,7 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 					prevPageAddress = operatorPageAddress;
 					operatorPageAddress = operator.nextPage();
 					if(operatorPageAddress < 0) //gets out of the loop
-						continue;
+						break;
 					operatorPage = mem.loadPage(operatorPageAddress);
 					operatorPage.switchToReadMode();
 					continue;

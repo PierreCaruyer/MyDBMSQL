@@ -46,25 +46,33 @@ public class DefaultRelation {
     		return;
     	try {
 			Page currentPage = mem.NewPage(sortsCount), lastPage = null;
+			
 			currentPage.SetPrevAdd(-1);
 			firstPageAddress = currentPage.getAddressPage();
+			
+			int n = 0;
 			for(int i = 0; i < tuples.size(); i++) {
 				currentPage.AddTuple(tuples.get(i));
-				if(currentPage.getNumberofTuple() == SchemawithMemory.PAGE_SIZE) {
+				n++;
+				if ( n == SchemawithMemory.PAGE_SIZE && i != tuples.size()-1 ) {
 					lastPage = currentPage;
-					mem.PutinMemory(currentPage, currentPage.getAddressPage());
-					mem.releasePage(currentPage.getAddressPage(), true);
+					
 					currentPage = mem.NewPage(sortsCount);
 					currentPage.SetPrevAdd(lastPage.getAddressPage());
 					lastPage.SetNextAdd(currentPage.getAddressPage());
-				}
-				else if(i == tuples.size() - 1) {
-					mem.PutinMemory(currentPage, currentPage.getAddressPage());
-					mem.releasePage(currentPage.getAddressPage(), true);
+					
+					mem.PutinMemory(lastPage, lastPage.getAddressPage());
+					mem.releasePage(lastPage.getAddressPage(), true);
+					n = 0;
 				}
 			}
+			currentPage.SetNextAdd(-1);
+			mem.PutinMemory(currentPage, currentPage.getAddressPage());
 			
 			lastPageAddress = currentPage.getAddressPage();
+			
+			mem.releasePage(currentPage.getAddressPage(), true);
+			
 		} catch (NotEnoughMemoryException e) {
 			e.printStackTrace();
 		}
