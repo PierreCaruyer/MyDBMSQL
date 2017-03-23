@@ -63,6 +63,7 @@ public class DefaultRelation {
 					mem.releasePage(currentPage.getAddressPage(), true);
 				}
 			}
+			
 			lastPageAddress = currentPage.getAddressPage();
 		} catch (NotEnoughMemoryException e) {
 			e.printStackTrace();

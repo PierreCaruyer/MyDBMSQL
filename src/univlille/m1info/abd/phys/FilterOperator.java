@@ -30,7 +30,7 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 	
 	@Override
 	public int nextPage() {
-		if(operatorPageAddress < 0) //page address hasn't been initialized
+		if(operatorPageAddress < 0) //page address isn't initialized
 			operatorPageAddress = operator.nextPage();
 		if(operatorPageAddress < 0)
 			return operatorPageAddress;
@@ -42,16 +42,19 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 			String[] operatorTuple = null, tuple = null, firstTuple = null;
 			
 			//Goes on until page is full
-			while(page.getNumberofTuple() != SchemawithMemory.PAGE_SIZE && prevPageAddress != operatorPageAddress) {
+			while(page.getNumberofTuple() != SchemawithMemory.PAGE_SIZE && operatorPageAddress > -1 && prevPageAddress != operatorPageAddress) {
 				operatorTuple = operatorPage.nextTuple();
 				
-				//Page.nextTuple() loops : when it reaches its end, it rewinds to the first tuple of the page 
+				/*Page.nextTuple() loops : when it reaches its end, it rewinds to the first tuple of the page
+				 * Therefore if the current tuple has the same reference than the first tuple,
+				 * all the tuples of this page have been computed 
+				 */
 				if(operatorTuple == firstTuple || operatorTuple == null) {
 					mem.releasePage(operatorPageAddress, false);
 					prevPageAddress = operatorPageAddress;
 					operatorPageAddress = operator.nextPage();
-					if(operatorPageAddress < 0)
-						break;
+					if(operatorPageAddress < 0) //gets out of the loop
+						continue;
 					operatorPage = mem.loadPage(operatorPageAddress);
 					operatorPage.switchToReadMode();
 					continue;
@@ -62,7 +65,7 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 					firstTuple = operatorTuple;
 				
 				tuple = getComputedTuple(operatorTuple);
-				//if computation failed
+				//Computation isn't right
 				if(tuple == null)
 					continue;
 				page.AddTuple(tuple);
@@ -74,13 +77,6 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 		} catch (NotEnoughMemoryException e) {
 			return -2;
 		}
-	}
-	
-	public void printTuple(String[] t) {
-		System.out.print("[");
-		for(String a : t)
-			System.out.print(a + ", ");
-		System.out.println("]");
 	}
 	
 	protected abstract String[] getComputedTuple(String[] tuple);
