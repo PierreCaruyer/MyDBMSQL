@@ -124,6 +124,10 @@ public class TestTP6 {
 				printTuple(nextTuple);
 				nextTuple = p.nextTuple();
 			}
+			
+			for(String[] t : tupleArray) {
+				printTuple(t);
+			}
 			List<String[]> expectedArray = new ArrayList<>();
 			expectedArray.add(new String[]{"a5", "b1", "c3", "e4"});
 			expectedArray.add(new String[]{"a1", "b4", "c6","e6"});

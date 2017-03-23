@@ -1,21 +1,5 @@
 package univlille.m1info.abd.tp3;
 
-import univlille.m1info.abd.phys.JoinOperator;
-import univlille.m1info.abd.phys.PhysicalOperator;
-import univlille.m1info.abd.phys.ProjectionOperator;
-import univlille.m1info.abd.phys.RenameOperator;
-import univlille.m1info.abd.phys.SelectionOperator;
-import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
-import univlille.m1info.abd.ra.JoinQuery;
-import univlille.m1info.abd.ra.ProjectionQuery;
-import univlille.m1info.abd.ra.RAQuery;
-import univlille.m1info.abd.ra.RelationNameQuery;
-import univlille.m1info.abd.ra.RenameQuery;
-import univlille.m1info.abd.ra.SelectionQuery;
-import univlille.m1info.abd.ra.UnaryRAQuery;
-import univlille.m1info.abd.simplebd.SimpleDBRelation;
-import univlille.m1info.abd.simplebd.SimpleSGBD;
-
 public class TP3 {
 	/** Creates an operator that allows to (efficiently) execute the given operation on the given database. */
 	/*public PhysicalOperator getOperator(RAQuery query, SimpleSGBD sgbd) {
