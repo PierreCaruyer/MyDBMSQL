@@ -17,11 +17,12 @@ public interface Page {
 	
 	public int getAddresspreviousPage ();
 	
+	
 	/**
 	 * 
 	 * @return the next tuple using the iterator
 	 */
-	public String[] nextTuple();
+	public String[] nextTuple ();
 	
 	/**
 	 * 
@@ -83,5 +84,7 @@ public interface Page {
 	
 	
 	public void SetNextAdd (int NextAdd);
+
+	public boolean isFull();
 	
 }

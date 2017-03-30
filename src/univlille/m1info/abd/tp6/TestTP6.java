@@ -33,18 +33,20 @@ public class TestTP6 {
 		tuples.add(new String[]{"a5", "b1", "c3"});
 		tuples.add(new String[]{"a1", "b4", "c6"});
 		tuples.add(new String[]{"a2", "b5", "c2"});
+		tuples.add(new String[]{"a3", "b8", "c7"});
 		relation.loadTuples(tuples);
 		SequentialAccessOnARelationOperator tableRelation = new SequentialAccessOnARelationOperator(relation, mem);
 		return tableRelation;
 	}
 	
 	public SequentialAccessOnARelationOperator getLeftLoadedTable(MemoryManager mem) {
-		RelationSchema schema = new DefaultRelationSchema("RELTWO", new String[]{"attrE", "attrB", "attrA"});
+		RelationSchema schema = new DefaultRelationSchema("RELTWO", new String[]{"attrE", "attrD", "attrA"});
 		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
-		tuples.add(new String[]{"e4", "b1", "a5"});
-		tuples.add(new String[]{"e6", "b4", "a1"});
-		tuples.add(new String[]{"e9", "b5", "a2"});
+		tuples.add(new String[]{"e4", "d1", "a5"});
+		tuples.add(new String[]{"e6", "d4", "a4"});
+		tuples.add(new String[]{"e9", "d5", "a3"});
+		tuples.add(new String[]{"e6", "d3", "a2"});		
 		relation.loadTuples(tuples);
 		SequentialAccessOnARelationOperator tableRelation = new SequentialAccessOnARelationOperator(relation, mem);
 		return tableRelation;
@@ -69,13 +71,7 @@ public class TestTP6 {
 		int page = selection.nextPage();
 		try {
 			Page p = mem.loadPage(page);
-			p.switchToReadMode();
-			String[] nextTuple = p.nextTuple();
-			List<String[]> tupleArray = new ArrayList<>();
-			while(nextTuple != null) {
-				tupleArray.add(nextTuple);
-				nextTuple = p.nextTuple();
-			}
+			List<String[]> tupleArray = retrievePageTuples(p);
 			List<String[]> expectedArray = new ArrayList<>();
 			expectedArray.add(new String[]{"a5", "b1", "c3"});
 			
@@ -92,12 +88,8 @@ public class TestTP6 {
 		try {
 			Page p = mem.loadPage(page);
 			p.switchToReadMode();
-			String[] nextTuple = p.nextTuple();
-			List<String[]> tupleArray = new ArrayList<>();
-			while(nextTuple != null) {
-				tupleArray.add(nextTuple);
-				nextTuple = p.nextTuple();
-			}
+			List<String[]> tupleArray = retrievePageTuples(p);
+			
 			List<String[]> expectedArray = new ArrayList<>();
 			expectedArray.add(new String[]{"a5", "c3"});
 			expectedArray.add(new String[]{"a1", "c6"});
@@ -109,29 +101,22 @@ public class TestTP6 {
 		}
 	}
 	
-	
 	@Test
 	public void testCorrectJoinOperatorWithMemory() {
-		JoinOperator join = getJoinOperator(mem);
+		MemoryManager manager = new SimpleMemoryManager(2, 5);
+		JoinOperator join = getJoinOperator(manager);
 		int page = join.nextPage();
 		try {
 			Page p = mem.loadPage(page);
-			p.switchToReadMode();
-			String[] nextTuple = p.nextTuple();
-			List<String[]> tupleArray = new ArrayList<>();
-			while(nextTuple != null) {
-				tupleArray.add(nextTuple);
-				printTuple(nextTuple);
-				nextTuple = p.nextTuple();
-			}
+			List<String[]> tupleArray = retrievePageTuples(p);
 			
-			for(String[] t : tupleArray) {
+			for(String[] t : tupleArray)
 				printTuple(t);
-			}
+			
 			List<String[]> expectedArray = new ArrayList<>();
-			expectedArray.add(new String[]{"a5", "b1", "c3", "e4"});
-			expectedArray.add(new String[]{"a1", "b4", "c6","e6"});
-			expectedArray.add(new String[]{"a2", "b5", "c2", "e9"});
+			expectedArray.add(new String[]{"a2", "b5", "c2", "e6", "d3"});
+			expectedArray.add(new String[]{"a3", "b8", "c7", "e9", "d5"});
+			expectedArray.add(new String[]{"a5", "b1", "c3", "e4", "d1"});
 			
 			assertTrue(pageContentEquals(expectedArray, tupleArray));
 		} catch (NotEnoughMemoryException e) {
@@ -150,6 +135,17 @@ public class TestTP6 {
 			}
 		}
 		return true;
+	}
+	
+	private List<String[]> retrievePageTuples(Page p) {
+		List<String[]> tupleArray = new ArrayList<>();
+		p.switchToReadMode();
+		String[] tuple = p.nextTuple();
+		while(tuple != null) {
+			tupleArray.add(tuple);
+			tuple = p.nextTuple();
+		}
+		return tupleArray;
 	}
 	
 	public static void printTuple(String[] t) {

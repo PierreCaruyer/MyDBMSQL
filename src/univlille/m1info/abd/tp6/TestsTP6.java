@@ -15,7 +15,7 @@ import univlille.m1info.abd.schema.DefaultRelationSchema;
 import univlille.m1info.abd.schema.RelationSchema;
 
 public class TestsTP6 {	
-
+/*
 	// NOTE: remplacer ParcoursTableParPage par votre classe du TP6 - 5.1 Q1
 	
 	@Test
@@ -156,7 +156,5 @@ public class TestsTP6 {
 		
 		System.out.println("Number of operations: " + mem.getNumberOfDiskReadSinceLastReset());
 	}
-	
-	
-	
+	*/
 }
