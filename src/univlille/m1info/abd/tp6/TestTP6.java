@@ -1,6 +1,7 @@
 package univlille.m1info.abd.tp6;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,6 +110,7 @@ public class TestTP6 {
 	
 	@Test
 	public void testCorrectJoinOperatorWithMemory() {
+		System.out.println("Test join");
 		MemoryManager manager = new SimpleMemoryManager(2, 5);
 		JoinOperator join = getJoinOperator(manager);
 		int page = join.nextPage();
@@ -125,7 +127,7 @@ public class TestTP6 {
 			
 			assertTrue(pageContentEquals(expectedArray, tupleArray));
 		} catch (NotEnoughMemoryException e) {
-			e.printStackTrace();
+			fail();
 		}
 	}
 	public boolean pageContentEquals(List<String[]> expected, List<String[]> actual) {
