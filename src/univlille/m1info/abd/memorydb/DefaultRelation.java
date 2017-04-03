@@ -50,11 +50,10 @@ public class DefaultRelation {
 			currentPage.SetPrevAdd(-1);
 			firstPageAddress = currentPage.getAddressPage();
 			
-			int n = 0;
 			for(int i = 0; i < tuples.size(); i++) {
 				currentPage.AddTuple(tuples.get(i));
-				n++;
-				if ( n == SchemawithMemory.PAGE_SIZE && i != tuples.size()-1 ) {
+				
+				if ( currentPage.isFull() && i != tuples.size()-1 ) {
 					lastPage = currentPage;
 					
 					currentPage = mem.NewPage(sortsCount);
@@ -63,7 +62,6 @@ public class DefaultRelation {
 					
 					mem.PutinMemory(lastPage, lastPage.getAddressPage());
 					mem.releasePage(lastPage.getAddressPage(), true);
-					n = 0;
 				}
 			}
 			currentPage.SetNextAdd(-1);

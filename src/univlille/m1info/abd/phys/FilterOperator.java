@@ -72,7 +72,10 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 				
 				tuple = getComputedTuple(operatorTuple);
 				
-				if(tuple == null)
+				if(page == null)
+					System.out.println("null");
+				
+				if(tuple != null)
 					page.AddTuple(tuple);
 			}
 			

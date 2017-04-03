@@ -15,7 +15,6 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator {
 		this.relation = relation;
 		this.mem = mem;
 		this.schema = relation.getRelationSchema();
-		pageAddress = relation.getFirstPageAddress();
 	}
 
 	@Override

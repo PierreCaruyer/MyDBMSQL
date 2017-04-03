@@ -66,12 +66,15 @@ public class TestTP6 {
 	
 	@Test
 	public void testCorrectSelectionOperatorWithMemory() {
-		
+		System.out.println("Test selection");
 		SelectionOperator selection = getSelectionOperator(mem);
 		int page = selection.nextPage();
 		try {
 			Page p = mem.loadPage(page);
 			List<String[]> tupleArray = retrievePageTuples(p);
+			
+			displayTupleArray(tupleArray);
+			
 			List<String[]> expectedArray = new ArrayList<>();
 			expectedArray.add(new String[]{"a5", "b1", "c3"});
 			
@@ -83,17 +86,20 @@ public class TestTP6 {
 	
 	@Test
 	public void testCorrectProjectionOperatorWithMemory() {
+		System.out.println("Test projection");
 		ProjectionOperator selection = getProjectionOperator(mem);
 		int page = selection.nextPage();
 		try {
 			Page p = mem.loadPage(page);
-			p.switchToReadMode();
 			List<String[]> tupleArray = retrievePageTuples(p);
+
+			displayTupleArray(tupleArray);
 			
 			List<String[]> expectedArray = new ArrayList<>();
 			expectedArray.add(new String[]{"a5", "c3"});
 			expectedArray.add(new String[]{"a1", "c6"});
 			expectedArray.add(new String[]{"a2", "c2"});
+			expectedArray.add(new String[]{"a3", "c7"});
 			
 			assertTrue(pageContentEquals(expectedArray, tupleArray));
 		} catch (NotEnoughMemoryException e) {
@@ -110,8 +116,7 @@ public class TestTP6 {
 			Page p = mem.loadPage(page);
 			List<String[]> tupleArray = retrievePageTuples(p);
 			
-			for(String[] t : tupleArray)
-				printTuple(t);
+			displayTupleArray(tupleArray);
 			
 			List<String[]> expectedArray = new ArrayList<>();
 			expectedArray.add(new String[]{"a2", "b5", "c2", "e6", "d3"});
@@ -140,12 +145,14 @@ public class TestTP6 {
 	private List<String[]> retrievePageTuples(Page p) {
 		List<String[]> tupleArray = new ArrayList<>();
 		p.switchToReadMode();
-		String[] tuple = p.nextTuple();
-		while(tuple != null) {
+		for(String[] tuple = p.nextTuple(); tuple != null; tuple = p.nextTuple())
 			tupleArray.add(tuple);
-			tuple = p.nextTuple();
-		}
 		return tupleArray;
+	}
+	
+	private void displayTupleArray(List<String[]> tuples) {
+		for(String[] tuple : tuples)
+			printTuple(tuple);
 	}
 	
 	public static void printTuple(String[] t) {
