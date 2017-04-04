@@ -47,7 +47,7 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator {
 			if (pageAddress > -1) {
 				Page currentPage = mem.loadPage(pageAddress);
 				int nextPageAddress = currentPage.getAddressnextPage();
-				mem.releasePage(pageAddress, true);
+				mem.releasePage(pageAddress, false);
 				pageAddress = nextPageAddress;
 			} else
 				pageAddress = relation.getFirstPageAddress();

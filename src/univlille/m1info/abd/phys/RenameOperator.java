@@ -3,7 +3,7 @@ package univlille.m1info.abd.phys;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class RenameOperator extends FilterOperator implements PhysicalOperator{
+public class RenameOperator extends UnaryOperator implements PhysicalOperator{
 
 	private String[] attrNames = null;
 	private RelationSchema schema = null;
@@ -22,7 +22,7 @@ public class RenameOperator extends FilterOperator implements PhysicalOperator{
 	
 	@Override
 	public String[] nextTuple() {
-		return operator.nextTuple();
+		return super.nextTuple();
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class SelectionOperator extends FilterOperator implements PhysicalOperator {
+public class SelectionOperator extends UnaryOperator implements PhysicalOperator {
 
 	private final ComparisonOperator comparator;
 	private final String constantValue;
@@ -28,12 +28,7 @@ public class SelectionOperator extends FilterOperator implements PhysicalOperato
 	
 	@Override
 	public String[] nextTuple() {
-		String[] tuple = operator.nextTuple();
-
-		while(tuple != null && !computeComparison(tuple[attributeIndex], constantValue))
-			tuple = operator.nextTuple();
-
-		return tuple;
+		return super.nextTuple();
 	}
 
 	/**

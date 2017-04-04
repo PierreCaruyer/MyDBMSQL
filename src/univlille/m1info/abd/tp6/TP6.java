@@ -23,7 +23,7 @@ public class TP6 {
 			Page p = mem.loadPage(pageAddress);
 			
 			List<String[]> retrievedTuples = retrievePageTuples(p);
-			displayTupleArray(retrievedTuples);
+			//displayTupleArray(retrievedTuples);
 			
 			for(String[] t : retrievedTuples)
 				tuples.add(t);

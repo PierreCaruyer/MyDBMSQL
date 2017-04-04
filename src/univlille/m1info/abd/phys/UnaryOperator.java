@@ -2,7 +2,11 @@ package univlille.m1info.abd.phys;
 
 import univlille.m1info.abd.schema.RelationSchema;
 
-public abstract class FilterOperator implements PhysicalOperator{ // Equivalent to UnaryRAQUery
+/**
+ * Abstraction of all unary operators (equivalent to UnaryRAQueries) such as
+ * RenameOperator, ProjectionOperator, SelectionOperator, etc ...
+ */
+public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent to UnaryRAQUery
 	
 	protected int operatorPageAddress = -1, pageAddress = -1;
 	protected int pageTupleCount, operatorTupleCount;
@@ -10,15 +14,47 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 	protected final int sortsLength;
 	protected final PhysicalOperator operator;
 	protected int operatorTuplePtr = 0;
+	protected String[] firstTuple;
 	
-	public FilterOperator(PhysicalOperator operator, MemoryManager mem, int sortsLength) {
+	public UnaryOperator(PhysicalOperator operator, MemoryManager mem, int sortsLength) {
 		this.operator = operator;
 		this.mem = mem;
 		this.sortsLength = sortsLength;
+		this.firstTuple = null;
 	}
 	
 	@Override
-	public abstract String[] nextTuple();
+	public String[] nextTuple() {
+		if(pageAddress < 0) {
+			pageAddress = nextPage();
+			if(pageAddress < 0)
+				return null;
+		}
+		
+		try {
+			Page page = mem.loadPage(pageAddress);
+			String[] tuple = page.nextTuple();
+			
+			if(tuple == firstTuple) {
+				mem.releasePage(pageAddress, false);
+				pageAddress = nextPage();
+				if(pageAddress < 0)
+					return null;
+				
+				page = mem.loadPage(pageAddress);
+				firstTuple = null;
+				tuple = page.nextTuple();
+				return tuple;
+			}
+			
+			if(firstTuple == null)
+				firstTuple = tuple;
+			
+			return tuple;
+		} catch (NotEnoughMemoryException e) {
+			return null;
+		}
+	}
 	
 	@Override
 	public abstract RelationSchema resultSchema();
@@ -75,12 +111,12 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 			}
 			
 			if(page.getNumberofTuple() != 0) {
-				int pageAddress = page.getAddressPage();
+				int address = page.getAddressPage();
 				
 				mem.PutinMemory(page, page.getAddressPage());//page update since it has been modified
 				mem.releasePage(page.getAddressPage(), false); //freeing memory
 				
-				return pageAddress;
+				return address;
 			}
 			return -1;
 		} catch (NotEnoughMemoryException e) {

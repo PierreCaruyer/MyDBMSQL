@@ -6,7 +6,7 @@ import java.util.HashMap;
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
 
-public class ProjectionOperator extends FilterOperator implements PhysicalOperator{
+public class ProjectionOperator extends UnaryOperator implements PhysicalOperator{
 
 	private final RelationSchema schema;
 	private final String[] attributeNames;
@@ -24,8 +24,7 @@ public class ProjectionOperator extends FilterOperator implements PhysicalOperat
 
 	@Override
 	public String[] nextTuple() {
-		String[] currentTuple = operator.nextTuple();
-		return getComputedTuple(currentTuple);
+		return super.nextTuple();
 	}
 
 	@Override
