@@ -97,6 +97,7 @@ public class JoinOperator implements PhysicalOperator {
 		try{
 			int leftPrevPage = -1, rightPrevPage = -1;
 			Page page = mem.NewPage(joinSorts.size());
+			System.out.println(page.getAddressPage());
 			Page leftPage = mem.NewPage(left.resultSchema().getSort().length);
 			Page rightPage = mem.NewPage(right.resultSchema().getSort().length);
 			String[] leftTuple = null, rightTuple = null, tuple = null, firstRightTuple = null, firstLeftTuple = null;
@@ -110,11 +111,11 @@ public class JoinOperator implements PhysicalOperator {
 				
 			//Initialize operator pages and their iterator
 			rightPage.switchToReadMode();
-			for(; rightTupleCount >= 0; rightTupleCount--)
+			for(; rightTupleCount > 0; rightTupleCount--)
 				rightPage.nextTuple();
 			
 			leftPage.switchToReadMode();
-			for(; leftTupleCount >= 0; leftTupleCount--)
+			for(; leftTupleCount > 0; leftTupleCount--)
 				leftPage.nextTuple();
 			
 			while(!page.isFull() && leftPrevPage != leftPageAddress && rightPrevPage != rightPageAddress) {

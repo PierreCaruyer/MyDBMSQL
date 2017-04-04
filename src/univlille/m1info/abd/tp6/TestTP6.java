@@ -25,7 +25,6 @@ public class TestTP6 {
 	
 	public static final int PAGE_SIZE = 20;
 	public static final int ATTRIBUTE_SIZE = 20;
-	public static final MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
 
 	public SequentialAccessOnARelationOperator getRightLoadedTable(MemoryManager mem) {
 		RelationSchema schema = new DefaultRelationSchema("RELONE", new String[]{"attrA", "attrB", "attrC"});
@@ -68,6 +67,7 @@ public class TestTP6 {
 	@Test
 	public void testCorrectSelectionOperatorWithMemory() {
 		System.out.println("Test selection");
+		final MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
 		SelectionOperator selection = getSelectionOperator(mem);
 		int page = selection.nextPage();
 		try {
@@ -81,13 +81,14 @@ public class TestTP6 {
 			
 			assertTrue(pageContentEquals(expectedArray, tupleArray));
 		} catch (NotEnoughMemoryException e) {
-			e.printStackTrace();
+			fail();
 		}
 	}
 	
 	@Test
 	public void testCorrectProjectionOperatorWithMemory() {
 		System.out.println("Test projection");
+		final MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
 		ProjectionOperator selection = getProjectionOperator(mem);
 		int page = selection.nextPage();
 		try {
@@ -104,21 +105,21 @@ public class TestTP6 {
 			
 			assertTrue(pageContentEquals(expectedArray, tupleArray));
 		} catch (NotEnoughMemoryException e) {
-			e.printStackTrace();
+			fail();
 		}
 	}
 	
 	@Test
 	public void testCorrectJoinOperatorWithMemory() {
 		System.out.println("Test join");
-		MemoryManager manager = new SimpleMemoryManager(2, 5);
-		JoinOperator join = getJoinOperator(manager);
+		final MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
+		JoinOperator join = getJoinOperator(mem);
 		int page = join.nextPage();
 		try {
 			Page p = mem.loadPage(page);
 			List<String[]> tupleArray = retrievePageTuples(p);
 			
-			displayTupleArray(tupleArray);
+			//displayTupleArray(tupleArray);
 			
 			List<String[]> expectedArray = new ArrayList<>();
 			expectedArray.add(new String[]{"a2", "b5", "c2", "e6", "d3"});

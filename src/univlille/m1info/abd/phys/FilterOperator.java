@@ -35,17 +35,16 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 		if(operatorPageAddress < 0)
 			return operatorPageAddress;
 		try {
-			int prevPageAddress = -1;
 			Page operatorPage = mem.loadPage(operatorPageAddress);
 			Page page = mem.NewPage(sortsLength);
 			String[] operatorTuple = null, tuple = null, firstTuple = null;
 
 			operatorPage.switchToReadMode();
-			for(; operatorTuplePtr >= 0; operatorTuplePtr--)
+			for(; operatorTuplePtr > 0; operatorTuplePtr--)
 				operatorPage.nextTuple();
 			
 			//Goes on until the page is full
-			while(!page.isFull() && prevPageAddress != operatorPageAddress) {
+			while(!page.isFull()) {
 				operatorTuple = operatorPage.nextTuple();
 				operatorTuplePtr++;
 				
@@ -54,7 +53,6 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 				 * all the tuples of this page have been computed 
 				 */
 				if(operatorTuple == firstTuple || operatorTuple == null) {
-					prevPageAddress = operatorPageAddress;
 					mem.releasePage(operatorPageAddress, false);
 					operatorPageAddress = operator.nextPage();
 					if(operatorPageAddress < 0) //gets out of the loop
@@ -71,10 +69,7 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 					firstTuple = operatorTuple;
 				
 				tuple = getComputedTuple(operatorTuple);
-				
-				if(page == null)
-					System.out.println("null");
-				
+		
 				if(tuple != null)
 					page.AddTuple(tuple);
 			}
@@ -88,6 +83,13 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 		} catch (NotEnoughMemoryException e) {
 			return -2;
 		}
+	}
+	
+	public static void printTuple(String[] t) {
+		System.out.print("[");
+		for(String a : t)
+			System.out.print(a + ", ");
+		System.out.println("]");
 	}
 	
 	protected abstract String[] getComputedTuple(String[] tuple);
