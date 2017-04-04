@@ -74,12 +74,15 @@ public abstract class FilterOperator implements PhysicalOperator{ // Equivalent 
 					page.AddTuple(tuple);
 			}
 			
-			int pageAddress = page.getAddressPage();
-			
-			mem.PutinMemory(page, page.getAddressPage());//page update since it has been modified
-			mem.releasePage(page.getAddressPage(), false); //freeing memory
-			
-			return pageAddress;
+			if(page.getNumberofTuple() != 0) {
+				int pageAddress = page.getAddressPage();
+				
+				mem.PutinMemory(page, page.getAddressPage());//page update since it has been modified
+				mem.releasePage(page.getAddressPage(), false); //freeing memory
+				
+				return pageAddress;
+			}
+			return -1;
 		} catch (NotEnoughMemoryException e) {
 			return -2;
 		}

@@ -22,7 +22,10 @@ public class TP6 {
 		while(pageAddress > -1) {
 			Page p = mem.loadPage(pageAddress);
 			
-			for(String[] t : retrievePageTuples(p))
+			List<String[]> retrievedTuples = retrievePageTuples(p);
+			displayTupleArray(retrievedTuples);
+			
+			for(String[] t : retrievedTuples)
 				tuples.add(t);
 			
 			pageAddress = operator.nextPage();

@@ -118,6 +118,8 @@ public class TestTP6 {
 		List<String[]> tupleArray;
 		try {
 			tupleArray = tp6.getOperatorTuples(testOperator);
+			System.out.println(tupleArray.size());
+			//TP6.displayTupleArray(tupleArray);
 			assertTrue(pageContentEquals(expectedTuples, tupleArray));
 		} catch (NotEnoughMemoryException e) {
 			fail();
@@ -136,18 +138,21 @@ public class TestTP6 {
 	public void testCorrectLongSelectionOperatorWithMemory() {
 		PhysicalOperator selection = getLongSelectionOperator(tp6.getMemoryManager());
 		List<String[]> expectedArray = new ArrayList<>();
-		expectedArray.add(new String[]{"a5", "b1", "c3"});
-		synthesizeTest("Test short selection", selection, expectedArray);
+		for(int i = 0; i < REPEAT; i++) 
+			expectedArray.add(new String[]{"a5", "b1", "c3"});
+		synthesizeTest("Test long selection", selection, expectedArray);
 	}
 	
 	@Test
 	public void testCorrectShortProjectionOperatorWithMemory() {
 		PhysicalOperator projection = getShortProjectionOperator(tp6.getMemoryManager());
 		List<String[]> expectedArray = new ArrayList<>();
+		
 		expectedArray.add(new String[]{"a5", "c3"});
 		expectedArray.add(new String[]{"a1", "c6"});
 		expectedArray.add(new String[]{"a2", "c2"});
 		expectedArray.add(new String[]{"a3", "c7"});
+		
 		synthesizeTest("Test short projection", projection, expectedArray);
 	}
 	
@@ -155,12 +160,14 @@ public class TestTP6 {
 	public void testCorrectLongProjectionOperatorWithMemory() {
 		PhysicalOperator projection = getLongProjectionOperator(tp6.getMemoryManager());
 		List<String[]> expectedArray = new ArrayList<>();
+		
 		for(int i = 0; i < REPEAT; i++) {
 			expectedArray.add(new String[]{"a5", "c3"});
 			expectedArray.add(new String[]{"a1", "c6"});
 			expectedArray.add(new String[]{"a2", "c2"});
 			expectedArray.add(new String[]{"a3", "c7"});
 		}
+		
 		synthesizeTest("Test long projection", projection, expectedArray);
 	}
 	
@@ -168,10 +175,12 @@ public class TestTP6 {
 	public void testCorrectJoinOperatorWithMemory() {
 		PhysicalOperator join = getJoinOperator(tp6.getMemoryManager());
 		List<String[]> expectedArray = new ArrayList<>();
+		
 		expectedArray.add(new String[]{"a2", "b5", "c2", "e6", "d3"});
 		expectedArray.add(new String[]{"a3", "b8", "c7", "e9", "d5"});
 		expectedArray.add(new String[]{"a5", "b1", "c3", "e4", "d1"});
-		synthesizeTest("Test long projection", join, expectedArray);
+		
+		synthesizeTest("Test join", join, expectedArray);
 	}
 	
 	public boolean pageContentEquals(List<String[]> expected, List<String[]> actual) {
