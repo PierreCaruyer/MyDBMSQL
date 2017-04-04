@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
-import univlille.m1info.abd.tp6.TestTP6;
+import univlille.m1info.abd.tp6.TP6;
 
 public class JoinOperator implements PhysicalOperator {
 
@@ -187,9 +187,9 @@ public class JoinOperator implements PhysicalOperator {
 				inter.add(attr);
 		}
 		System.out.print("leftTuple ");
-		TestTP6.printTuple(tuple1);
+		TP6.printTuple(tuple1);
 		System.out.print("rightTuple ");
-		TestTP6.printTuple(tuple2);
+		TP6.printTuple(tuple2);
 		// Check the joint
 		boolean isJoin = true;
 		for (String attr : inter) {

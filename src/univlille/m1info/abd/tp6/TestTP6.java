@@ -6,131 +6,174 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import univlille.m1info.abd.memorydb.DefaultRelation;
 import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.NotEnoughMemoryException;
-import univlille.m1info.abd.phys.Page;
+import univlille.m1info.abd.phys.PhysicalOperator;
 import univlille.m1info.abd.phys.ProjectionOperator;
 import univlille.m1info.abd.phys.SelectionOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
-import univlille.m1info.abd.phys.SimpleMemoryManager;
 import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.DefaultRelationSchema;
 import univlille.m1info.abd.schema.RelationSchema;
 
 public class TestTP6 {
-	
-	public static final int PAGE_SIZE = 20;
-	public static final int ATTRIBUTE_SIZE = 20;
 
+	private static final int PAGE_SIZE = 20;
+	private static final int ATTRIBUTE_SIZE = 20;
+	private static final int REPEAT = 15;
+	private TP6 tp6;
+	
+	/**
+	 * Loads a Short table
+	 */
 	public SequentialAccessOnARelationOperator getRightLoadedTable(MemoryManager mem) {
 		RelationSchema schema = new DefaultRelationSchema("RELONE", new String[]{"attrA", "attrB", "attrC"});
 		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
+		
 		tuples.add(new String[]{"a5", "b1", "c3"});
 		tuples.add(new String[]{"a1", "b4", "c6"});
 		tuples.add(new String[]{"a2", "b5", "c2"});
 		tuples.add(new String[]{"a3", "b8", "c7"});
+		
 		relation.loadTuples(tuples);
-		SequentialAccessOnARelationOperator tableRelation = new SequentialAccessOnARelationOperator(relation, mem);
-		return tableRelation;
+		
+		return new SequentialAccessOnARelationOperator(relation, mem); 
 	}
 	
+	/**
+	 * Loads a Short table
+	 */
 	public SequentialAccessOnARelationOperator getLeftLoadedTable(MemoryManager mem) {
 		RelationSchema schema = new DefaultRelationSchema("RELTWO", new String[]{"attrE", "attrD", "attrA"});
 		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
+		
 		tuples.add(new String[]{"e4", "d1", "a5"});
 		tuples.add(new String[]{"e6", "d4", "a4"});
 		tuples.add(new String[]{"e9", "d5", "a3"});
-		tuples.add(new String[]{"e6", "d3", "a2"});		
+		tuples.add(new String[]{"e6", "d3", "a2"});
+		
 		relation.loadTuples(tuples);
-		SequentialAccessOnARelationOperator tableRelation = new SequentialAccessOnARelationOperator(relation, mem);
-		return tableRelation;
+		
+		return new SequentialAccessOnARelationOperator(relation, mem);
 	}
 	
-	public SelectionOperator getSelectionOperator(MemoryManager mem) {
+	/**
+	 * Loads a table w/ many tuples to tests memory allocation and free mecanisms' correctness
+	 */
+	public SequentialAccessOnARelationOperator getLongLoadedTable(MemoryManager mem) {
+		RelationSchema schema = new DefaultRelationSchema("RELLONG", new String[]{"attrA", "attrB", "attrC"});
+		DefaultRelation relation = new DefaultRelation(schema, mem);
+		List<String[]> tuples = new ArrayList<>();
+		
+		for(int i = 0; i < REPEAT; i++) {
+			tuples.add(new String[]{"a5", "b1", "c3"});
+			tuples.add(new String[]{"a1", "b4", "c6"});
+			tuples.add(new String[]{"a2", "b5", "c2"});
+			tuples.add(new String[]{"a3", "b8", "c7"});
+		}
+		
+		relation.loadTuples(tuples);
+		
+		return new SequentialAccessOnARelationOperator(relation, mem);
+	}
+	
+	//Selection operator w/ few tuples
+	public SelectionOperator getShortSelectionOperator(MemoryManager mem) {
 		return new SelectionOperator(getRightLoadedTable(mem), "attrA", "a5", ComparisonOperator.EQUAL, mem);
 	}
 	
-	public ProjectionOperator getProjectionOperator(MemoryManager mem) {
+	//Selection operator w/ more tuples
+	public SelectionOperator getLongSelectionOperator(MemoryManager mem) {
+		return new SelectionOperator(getLongLoadedTable(mem), "attrA", "a5", ComparisonOperator.EQUAL, mem);
+	}
+	
+	//Projection operator w/ few tuples
+	public ProjectionOperator getShortProjectionOperator(MemoryManager mem) {
 		return new ProjectionOperator(getRightLoadedTable(mem), mem, new String[]{"attrA", "attrC"});
+	}
+	
+	//Projection operator w/ more tuples
+	public ProjectionOperator getLongProjectionOperator(MemoryManager mem) {
+		return new ProjectionOperator(getLongLoadedTable(mem), mem, new String[]{"attrA", "attrC"});
 	}
 	
 	public JoinOperator getJoinOperator(MemoryManager mem) {
 		return new JoinOperator(getRightLoadedTable(mem), getLeftLoadedTable(mem), mem);
 	}
 	
-	@Test
-	public void testCorrectSelectionOperatorWithMemory() {
-		System.out.println("Test selection");
-		final MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
-		SelectionOperator selection = getSelectionOperator(mem);
-		int page = selection.nextPage();
+	@Before
+	public void setUp() {
+		tp6 = new TP6(PAGE_SIZE, ATTRIBUTE_SIZE);
+	}
+	
+	private void synthesizeTest(String testName, PhysicalOperator testOperator, List<String[]> expectedTuples) {
+		System.out.println(testName);
+		List<String[]> tupleArray;
 		try {
-			Page p = mem.loadPage(page);
-			List<String[]> tupleArray = retrievePageTuples(p);
-			
-			displayTupleArray(tupleArray);
-			
-			List<String[]> expectedArray = new ArrayList<>();
-			expectedArray.add(new String[]{"a5", "b1", "c3"});
-			
-			assertTrue(pageContentEquals(expectedArray, tupleArray));
+			tupleArray = tp6.getOperatorTuples(testOperator);
+			assertTrue(pageContentEquals(expectedTuples, tupleArray));
 		} catch (NotEnoughMemoryException e) {
 			fail();
 		}
 	}
 	
 	@Test
-	public void testCorrectProjectionOperatorWithMemory() {
-		System.out.println("Test projection");
-		final MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
-		ProjectionOperator selection = getProjectionOperator(mem);
-		int page = selection.nextPage();
-		try {
-			Page p = mem.loadPage(page);
-			List<String[]> tupleArray = retrievePageTuples(p);
-
-			displayTupleArray(tupleArray);
-			
-			List<String[]> expectedArray = new ArrayList<>();
+	public void testCorrectShortSelectionOperatorWithMemory() {
+		PhysicalOperator selection = getShortSelectionOperator(tp6.getMemoryManager());
+		List<String[]> expectedArray = new ArrayList<>();
+		expectedArray.add(new String[]{"a5", "b1", "c3"});
+		synthesizeTest("Test short selection", selection, expectedArray);
+	}
+	
+	@Test
+	public void testCorrectLongSelectionOperatorWithMemory() {
+		PhysicalOperator selection = getLongSelectionOperator(tp6.getMemoryManager());
+		List<String[]> expectedArray = new ArrayList<>();
+		expectedArray.add(new String[]{"a5", "b1", "c3"});
+		synthesizeTest("Test short selection", selection, expectedArray);
+	}
+	
+	@Test
+	public void testCorrectShortProjectionOperatorWithMemory() {
+		PhysicalOperator projection = getShortProjectionOperator(tp6.getMemoryManager());
+		List<String[]> expectedArray = new ArrayList<>();
+		expectedArray.add(new String[]{"a5", "c3"});
+		expectedArray.add(new String[]{"a1", "c6"});
+		expectedArray.add(new String[]{"a2", "c2"});
+		expectedArray.add(new String[]{"a3", "c7"});
+		synthesizeTest("Test short projection", projection, expectedArray);
+	}
+	
+	@Test
+	public void testCorrectLongProjectionOperatorWithMemory() {
+		PhysicalOperator projection = getLongProjectionOperator(tp6.getMemoryManager());
+		List<String[]> expectedArray = new ArrayList<>();
+		for(int i = 0; i < REPEAT; i++) {
 			expectedArray.add(new String[]{"a5", "c3"});
 			expectedArray.add(new String[]{"a1", "c6"});
 			expectedArray.add(new String[]{"a2", "c2"});
 			expectedArray.add(new String[]{"a3", "c7"});
-			
-			assertTrue(pageContentEquals(expectedArray, tupleArray));
-		} catch (NotEnoughMemoryException e) {
-			fail();
 		}
+		synthesizeTest("Test long projection", projection, expectedArray);
 	}
 	
 	@Test
 	public void testCorrectJoinOperatorWithMemory() {
-		System.out.println("Test join");
-		final MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
-		JoinOperator join = getJoinOperator(mem);
-		int page = join.nextPage();
-		try {
-			Page p = mem.loadPage(page);
-			List<String[]> tupleArray = retrievePageTuples(p);
-			
-			//displayTupleArray(tupleArray);
-			
-			List<String[]> expectedArray = new ArrayList<>();
-			expectedArray.add(new String[]{"a2", "b5", "c2", "e6", "d3"});
-			expectedArray.add(new String[]{"a3", "b8", "c7", "e9", "d5"});
-			expectedArray.add(new String[]{"a5", "b1", "c3", "e4", "d1"});
-			
-			assertTrue(pageContentEquals(expectedArray, tupleArray));
-		} catch (NotEnoughMemoryException e) {
-			fail();
-		}
+		PhysicalOperator join = getJoinOperator(tp6.getMemoryManager());
+		List<String[]> expectedArray = new ArrayList<>();
+		expectedArray.add(new String[]{"a2", "b5", "c2", "e6", "d3"});
+		expectedArray.add(new String[]{"a3", "b8", "c7", "e9", "d5"});
+		expectedArray.add(new String[]{"a5", "b1", "c3", "e4", "d1"});
+		synthesizeTest("Test long projection", join, expectedArray);
 	}
+	
 	public boolean pageContentEquals(List<String[]> expected, List<String[]> actual) {
 		if(expected.size() != actual.size())
 			return false;
@@ -143,25 +186,5 @@ public class TestTP6 {
 			}
 		}
 		return true;
-	}
-	
-	private List<String[]> retrievePageTuples(Page p) {
-		List<String[]> tupleArray = new ArrayList<>();
-		p.switchToReadMode();
-		for(String[] tuple = p.nextTuple(); tuple != null; tuple = p.nextTuple())
-			tupleArray.add(tuple);
-		return tupleArray;
-	}
-	
-	private void displayTupleArray(List<String[]> tuples) {
-		for(String[] tuple : tuples)
-			printTuple(tuple);
-	}
-	
-	public static void printTuple(String[] t) {
-		System.out.print("[");
-		for(String a : t)
-			System.out.print(a + ", ");
-		System.out.println("]");
 	}
 }
