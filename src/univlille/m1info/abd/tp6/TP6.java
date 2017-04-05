@@ -19,17 +19,19 @@ public class TP6 {
 	public List<String[]> getOperatorTuples(PhysicalOperator operator) throws NotEnoughMemoryException{
 		int pageAddress = operator.nextPage();
 		List<String[]> tuples = new ArrayList<>();
-		while(pageAddress > -1) {
-			Page p = mem.loadPage(pageAddress);
+		if(pageAddress < 0)
+			return tuples;
+		Page p;
+		do {
+			p = mem.loadPage(pageAddress);
 			
 			List<String[]> retrievedTuples = retrievePageTuples(p);
-			//displayTupleArray(retrievedTuples);
 			
 			for(String[] t : retrievedTuples)
 				tuples.add(t);
 			
 			pageAddress = operator.nextPage();
-		}
+		} while(pageAddress > -1 && p.isFull());
 		return tuples;
 	}
 	

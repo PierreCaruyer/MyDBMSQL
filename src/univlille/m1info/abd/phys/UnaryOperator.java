@@ -73,6 +73,7 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 		try {
 			Page operatorPage = mem.loadPage(operatorPageAddress);
 			Page page = mem.NewPage(sortsLength);
+			int firstPageAddress = -1;
 			String[] operatorTuple = null, tuple = null, firstTuple = null;
 
 			operatorPage.switchToReadMode();
@@ -80,7 +81,7 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 				operatorPage.nextTuple();
 			
 			//Goes on until the page is full
-			while(!page.isFull()) {
+			while(!page.isFull() && firstPageAddress != operatorPageAddress) {
 				operatorTuple = operatorPage.nextTuple();
 				operatorTuplePtr++;
 				
@@ -91,11 +92,12 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 				if(operatorTuple == firstTuple || operatorTuple == null) {
 					mem.releasePage(operatorPageAddress, false);
 					operatorPageAddress = operator.nextPage();
-					if(operatorPageAddress < 0) //gets out of the loop
+					if(operatorPageAddress < 0)//gets out of the loop
 						break;
 					firstTuple = null;
 					operatorTuplePtr = 0;
 					operatorPage = mem.loadPage(operatorPageAddress);
+					
 					operatorPage.switchToReadMode();
 					continue;
 				}
