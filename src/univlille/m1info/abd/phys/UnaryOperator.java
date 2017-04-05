@@ -81,7 +81,7 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 				operatorPage.nextTuple();
 			
 			//Goes on until the page is full
-			while(!page.isFull() && firstPageAddress != operatorPageAddress) {
+			while(!page.isFull()) {
 				operatorTuple = operatorPage.nextTuple();
 				operatorTuplePtr++;
 				

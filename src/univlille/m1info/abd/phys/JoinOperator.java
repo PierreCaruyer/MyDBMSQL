@@ -134,11 +134,11 @@ public class JoinOperator implements PhysicalOperator {
 							leftPageAddress = left.nextPage();
 							if(leftPageAddress < 0)
 								break;
+							
 							leftTupleCount = 0;
 							firstLeftTuple = null;
 							leftPage = mem.loadPage(leftPageAddress);
 							leftPage.switchToReadMode();
-							continue;
 						}
 					}
 					rightTupleCount = 0;
