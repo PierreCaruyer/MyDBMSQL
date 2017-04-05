@@ -66,11 +66,11 @@ public class TestTP6 {
 	}
 
 	/**
-	 * Loads a table w/ many tuples to tests memory allocation and free
+	 * Loads a table w/ many tuples to test memory allocation and free
 	 * mecanisms' correctness
 	 */
 	public SequentialAccessOnARelationOperator getLongLoadedTable() {
-		RelationSchema schema = new DefaultRelationSchema("RELLONG", new String[] { "attrA", "attrB", "attrC" });
+		RelationSchema schema = new DefaultRelationSchema("RELLONGR", new String[] { "attrA", "attrB", "attrC" });
 		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
 
@@ -85,7 +85,7 @@ public class TestTP6 {
 
 		return new SequentialAccessOnARelationOperator(relation, mem);
 	}
-
+	
 	// Selection operator w/ few tuples
 	public SelectionOperator getShortSelectionOperator() {
 		return new SelectionOperator(getRightLoadedTable(), "attrA", "a5", ComparisonOperator.EQUAL, mem);

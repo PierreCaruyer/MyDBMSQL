@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import univlille.m1info.abd.schema.RelationSchema;
 import univlille.m1info.abd.schema.VolatileRelationSchema;
-import univlille.m1info.abd.tp6.TP6;
 
 public class JoinOperator implements PhysicalOperator {
 
@@ -44,6 +43,7 @@ public class JoinOperator implements PhysicalOperator {
 		schema = new VolatileRelationSchema(joinSorts.toArray(new String[joinSorts.size()]));
 		//leftTuple = left.nextTuple(); // Initialising leftTuple to a default
 										// value
+		leftPageAddress = left.nextPage();
 	}
 
 	@Override
@@ -83,8 +83,9 @@ public class JoinOperator implements PhysicalOperator {
 
 	@Override
 	public int nextPage() {
-		if(leftPageAddress < 0)
+		if(leftPageAddress < 0) {
 			return leftPageAddress;
+		}
 		if(rightPageAddress < 0 || rightTupleCount == 0) {
 			rightPageAddress = right.nextPage();
 			if(rightPageAddress < 0) {
@@ -95,40 +96,35 @@ public class JoinOperator implements PhysicalOperator {
 			}
 		}
 		try{
-			int leftPrevPage = -1, rightPrevPage = -1;
 			Page page = mem.NewPage(joinSorts.size());
-			Page leftPage = mem.NewPage(left.resultSchema().getSort().length);
-			Page rightPage = mem.NewPage(right.resultSchema().getSort().length);
+			Page leftPage = mem.loadPage(leftPageAddress);
+			Page rightPage = mem.loadPage(rightPageAddress);
 			String[] leftTuple = null, rightTuple = null, tuple = null, firstRightTuple = null, firstLeftTuple = null;
 			
 			//Set the first tuples
-			firstRightTuple = rightPage.nextTuple();
+			leftPage.switchToReadMode();
+			leftTupleCount = (leftTupleCount > 0)? leftTupleCount -1 : leftTupleCount;
+			
+			rightPage.switchToReadMode();
 			rightTupleCount = (rightTupleCount > 0)? rightTupleCount - 1 : rightTupleCount;
 			
-			firstLeftTuple = leftPage.nextTuple();
-			leftTupleCount = (leftTupleCount > 0)? leftTupleCount -1 : leftTupleCount;
-				
 			//Initialize operator pages and their iterator
-			rightPage.switchToReadMode();
 			for(; rightTupleCount > 0; rightTupleCount--)
 				rightPage.nextTuple();
 			
-			leftPage.switchToReadMode();
 			for(; leftTupleCount > 0; leftTupleCount--)
 				leftPage.nextTuple();
 			
-			while(!page.isFull() && leftPrevPage != leftPageAddress && rightPrevPage != rightPageAddress) {
+			while(!page.isFull()) {
 				rightTuple = rightPage.nextTuple();
 				
 				if(rightTuple == firstRightTuple || rightTuple == null) {
 					mem.releasePage(rightPageAddress, false);
-					rightPrevPage = rightPageAddress;
 					rightPageAddress = right.nextPage();
 					if(rightPageAddress < 0) {
 						right.reset();
-						rightPrevPage = rightPageAddress;
 						rightPageAddress = right.nextPage();
-						if(rightPageAddress < 0) {
+						if(rightPageAddress < 0){
 							mem.releasePage(leftPageAddress, false);
 							break;
 						}
@@ -140,7 +136,6 @@ public class JoinOperator implements PhysicalOperator {
 								break;
 							leftTupleCount = 0;
 							firstLeftTuple = null;
-							leftPrevPage = leftPageAddress;
 							leftPage = mem.loadPage(leftPageAddress);
 							leftPage.switchToReadMode();
 							continue;
@@ -152,6 +147,9 @@ public class JoinOperator implements PhysicalOperator {
 					rightPage.switchToReadMode();
 					continue;
 				}
+				
+				if(leftTuple == null || rightTuple == null)
+					continue;
 				
 				if(firstRightTuple == null)
 					firstRightTuple = rightTuple;
@@ -185,10 +183,6 @@ public class JoinOperator implements PhysicalOperator {
 			if (Arrays.asList(leftSorts).contains(attr))
 				inter.add(attr);
 		}
-		System.out.print("leftTuple ");
-		TP6.printTuple(tuple1);
-		System.out.print("rightTuple ");
-		TP6.printTuple(tuple2);
 		// Check the joint
 		boolean isJoin = true;
 		for (String attr : inter) {
