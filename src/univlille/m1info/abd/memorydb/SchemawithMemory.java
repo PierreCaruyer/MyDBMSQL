@@ -15,18 +15,16 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 	public static final int ATTRIBUTE_SIZE = 20;
 	public static final MemoryManager mem =  new SimpleMemoryManager(PAGE_SIZE,ATTRIBUTE_SIZE);
 	private Map<String, Map<String,Index>> index;
-/**
- * 
- * @param schema
- * @return
- */
 	
+	/**
+	 * @param schema
+	 * @return
+	 */
 	@Override
 	protected DefaultRelation newRelation(RelationSchema schema) {
 		return new DefaultRelation(schema, mem);
 	}
 
-	
 	/**
 	 * 
 	 * @param nameRelation the name of the relation to which we are looking for an index
