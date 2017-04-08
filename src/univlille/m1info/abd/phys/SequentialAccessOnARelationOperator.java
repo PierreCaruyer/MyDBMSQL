@@ -1,4 +1,3 @@
-
 package univlille.m1info.abd.phys;
 
 import univlille.m1info.abd.memorydb.DefaultRelation;
@@ -6,15 +5,18 @@ import univlille.m1info.abd.schema.RelationSchema;
 
 public class SequentialAccessOnARelationOperator implements PhysicalOperator {
 
-	private final DefaultRelation relation;
-	private final RelationSchema schema;
-	private final MemoryManager mem;
-	private int pageAddress = -1;
+	protected final DefaultRelation relation;
+	protected final RelationSchema schema;
+	protected final MemoryManager mem;
+	protected int pageAddress;
+	protected boolean pageInitialized;
 
 	public SequentialAccessOnARelationOperator(DefaultRelation relation, MemoryManager mem) {
 		this.relation = relation;
 		this.mem = mem;
 		this.schema = relation.getRelationSchema();
+		pageAddress = -1;
+		pageInitialized = false;
 	}
 
 	@Override
@@ -38,22 +40,26 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator {
 
 	@Override
 	public void reset() {
-		pageAddress = -1;
+		pageInitialized = false;
 	}
 
 	@Override
 	public int nextPage() {
 		try {
-			if (pageAddress > -1) {
+			if (pageAddress >= 0) {
 				Page currentPage = mem.loadPage(pageAddress);
 				int nextPageAddress = currentPage.getAddressnextPage();
 				mem.releasePage(pageAddress, false);
 				pageAddress = nextPageAddress;
-			} else
+			} else if(!pageInitialized) {
 				pageAddress = relation.getFirstPageAddress();
+				pageInitialized = true;
+			} else {
+				pageAddress =  -1;
+			}
 			return pageAddress;
 		} catch (NotEnoughMemoryException e) {
-			return -2;
+			return -1;
 		}
 	}
 }

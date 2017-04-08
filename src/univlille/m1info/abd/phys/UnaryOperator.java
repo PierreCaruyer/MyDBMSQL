@@ -13,14 +13,17 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 	protected final MemoryManager mem;
 	protected final int sortsLength;
 	protected final PhysicalOperator operator;
-	protected int operatorTuplePtr = 0;
+	protected int operatorTuplePtr;
 	protected String[] firstTuple;
+	protected boolean operatorAtEnd;
 	
 	public UnaryOperator(PhysicalOperator operator, MemoryManager mem, int sortsLength) {
 		this.operator = operator;
 		this.mem = mem;
 		this.sortsLength = sortsLength;
 		this.firstTuple = null;
+		this.operatorTuplePtr = 0;
+		this.operatorAtEnd = false;
 	}
 	
 	@Override
@@ -66,22 +69,22 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 	
 	@Override
 	public int nextPage() {
-		if(operatorPageAddress < 0/* || operatorTuplePtr == 0*/) //page address isn't initialized
+		if(operatorPageAddress == -1) //page address isn't initialized
 			operatorPageAddress = operator.nextPage();
-		if(operatorPageAddress < 0)
-			return operatorPageAddress;
+		if(operatorPageAddress == -1)
+			return -1;
 		try {
 			Page operatorPage = mem.loadPage(operatorPageAddress);
 			Page page = mem.NewPage(sortsLength);
-			int firstPageAddress = -1;
-			String[] operatorTuple = null, tuple = null, firstTuple = null;
+			String[] operatorTuple = null, tuple = null;
 
 			operatorPage.switchToReadMode();
 			for(; operatorTuplePtr > 0; operatorTuplePtr--)
 				operatorPage.nextTuple();
 			
 			//Goes on until the page is full
-			while(!page.isFull()) {
+			while(operatorPageAddress != -1 && !page.isFull()) {
+				
 				operatorTuple = operatorPage.nextTuple();
 				operatorTuplePtr++;
 				
@@ -89,10 +92,10 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 				 * Therefore if the current tuple has the same reference than the first tuple,
 				 * all the tuples of this page have been computed 
 				 */
-				if(operatorTuple == firstTuple || operatorTuple == null) {
+				if(operatorTuple == null) {
 					mem.releasePage(operatorPageAddress, false);
 					operatorPageAddress = operator.nextPage();
-					if(operatorPageAddress < 0)//gets out of the loop
+					if(operatorPageAddress == -1)//gets out of the loop
 						break;
 					firstTuple = null;
 					operatorTuplePtr = 0;
@@ -101,10 +104,6 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 					operatorPage.switchToReadMode();
 					continue;
 				}
-				
-				//Sets the first tuple of the current page
-				if(firstTuple == null)
-					firstTuple = operatorTuple;
 				
 				tuple = getComputedTuple(operatorTuple);
 		
@@ -122,15 +121,8 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 			}
 			return -1;
 		} catch (NotEnoughMemoryException e) {
-			return -2;
+			return -1;
 		}
-	}
-	
-	public static void printTuple(String[] t) {
-		System.out.print("[");
-		for(String a : t)
-			System.out.print(a + ", ");
-		System.out.println("]");
 	}
 	
 	protected abstract String[] getComputedTuple(String[] tuple);

@@ -3,6 +3,7 @@ package univlille.m1info.abd.tp6;
 import java.util.ArrayList;
 import java.util.List;
 
+import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.NotEnoughMemoryException;
 import univlille.m1info.abd.phys.Page;
@@ -11,6 +12,8 @@ import univlille.m1info.abd.phys.SimpleMemoryManager;
 
 public class TP6 {
 	private MemoryManager mem;
+	private int nbTuples = 0;
+	private int nbPages = 0;
 	
 	public TP6(int pageSize, int attrSize) {
 		mem = new SimpleMemoryManager(pageSize, attrSize);
@@ -19,11 +22,10 @@ public class TP6 {
 	public List<String[]> getOperatorTuples(PhysicalOperator operator) throws NotEnoughMemoryException{
 		int pageAddress = operator.nextPage();
 		List<String[]> tuples = new ArrayList<>();
-		if(pageAddress < 0)
-			return tuples;
-		Page p;
-		do {
-			p = mem.loadPage(pageAddress);
+		while(pageAddress != -1) {
+			if(operator instanceof JoinOperator)
+				System.out.println("Page address " + pageAddress);
+			Page p = mem.loadPage(pageAddress);
 			
 			List<String[]> retrievedTuples = retrievePageTuples(p);
 			
@@ -31,8 +33,13 @@ public class TP6 {
 				tuples.add(t);
 			
 			pageAddress = operator.nextPage();
-		} while(pageAddress > -1 && p.isFull());
+		}
 		return tuples;
+	}
+	
+	public void resetTestsOperatiosn() {
+		nbPages = 0;
+		nbTuples = 0;
 	}
 	
 	private List<String[]> retrievePageTuples(Page p) {
@@ -43,12 +50,12 @@ public class TP6 {
 		return tupleArray;
 	}
 	
-	public static void displayTupleArray(List<String[]> tuples) {
+	public void displayPageContent(List<String[]> tuples) {
 		for(String[] tuple : tuples)
 			printTuple(tuple);
 	}
 	
-	public static void printTuple(String[] t) {
+	public void printTuple(String[] t) {
 		System.out.print("[");
 		for(String a : t)
 			System.out.print(a + ", ");
@@ -57,5 +64,13 @@ public class TP6 {
 	
 	public MemoryManager getMemoryManager() {
 		return mem;
+	}
+	
+	public int getPageCount() {
+		return nbPages;
+	}
+	
+	public int getTupleCount() {
+		return nbTuples;
 	}
 }

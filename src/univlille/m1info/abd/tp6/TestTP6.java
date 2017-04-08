@@ -139,18 +139,20 @@ public class TestTP6 {
 
 	private void synthesizeTest(String testName, PhysicalOperator testOperator, List<String[]> expectedTuples) {
 		System.out.println(testName);
-		List<String[]> tupleArray;
 		try {
-			tupleArray = tp6.getOperatorTuples(testOperator);
-			System.out.println("Number of reads : " + mem.getNumberOfDiskReadSinceLastReset());
-			System.out.println("Number of writes : " + mem.getNumberofWriteDiskSinceLastReset());
+			List<String[]> tupleArray = tp6.getOperatorTuples(testOperator);
+			//System.out.println("Number of reads : " + mem.getNumberOfDiskReadSinceLastReset());
+			if(testOperator instanceof JoinOperator) {
+				tp6.displayPageContent(tupleArray);
+				System.out.println(tupleArray.size());
+			}
 			assertTrue(pageContentEquals(expectedTuples, tupleArray));
 		} catch (NotEnoughMemoryException e) {
 			fail();
 		}
 	}
 
-	@Test
+	/*@Test
 	public void testCorrectShortSelectionOperatorWithMemory() {
 		PhysicalOperator selection = getShortSelectionOperator();
 		List<String[]> expectedArray = new ArrayList<>();
@@ -205,7 +207,7 @@ public class TestTP6 {
 		expectedArray.add(new String[] { "a5", "b1", "c3", "e4", "d1" });
 
 		synthesizeTest("Test join", join, expectedArray);
-	}
+	}*/
 	
 	@Test
 	/**

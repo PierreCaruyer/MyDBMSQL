@@ -74,7 +74,5 @@ public class TestWithRealLikeData {
 			}
 			SchemawithMemory.mem.releasePage(pageNb, true);
 		}
-		
 	}
-	
 }
