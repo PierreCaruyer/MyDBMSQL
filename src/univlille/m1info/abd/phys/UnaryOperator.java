@@ -62,7 +62,6 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 				 */
 				if(operatorTuple == null) {
 					mem.releasePage(operatorPageAddress, false);
-					System.out.println("Operator page address " + operatorPageAddress);
 					operatorPageAddress = operator.nextPage();
 					if(operatorPageAddress == -1)//gets out of the loop
 						break;

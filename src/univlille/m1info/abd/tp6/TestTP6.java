@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -90,9 +89,9 @@ public class TestTP6 {
 
 		return new SequentialAccessOnARelationOperator(relation, mem);
 	}
-	
+
 	public PhysicalOperator getLongLeftTable() {
-		RelationSchema schema = new DefaultRelationSchema("RELLONGR", new String[] { "attrA", "attrB", "attrC" });
+		RelationSchema schema = new DefaultRelationSchema("RELLONGR", new String[] { "attrE", "attrD", "attrA" });
 		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
 
@@ -107,7 +106,7 @@ public class TestTP6 {
 
 		return new SequentialAccessOnARelationOperator(relation, mem);
 	}
-	
+
 	// Selection operator w/ few tuples
 	public PhysicalOperator getShortSelectionOperator() {
 		return new SelectionOperator(getRightLoadedTable(), "attrA", "a5", ComparisonOperator.EQUAL, mem);
@@ -127,11 +126,15 @@ public class TestTP6 {
 	public PhysicalOperator getLongProjectionOperator() {
 		return new ProjectionOperator(getLongRightTable(), mem, new String[] { "attrA", "attrC" });
 	}
+	
+	public PhysicalOperator getProjectionOnBAndCAttributes() {
+		return new ProjectionOperator(getLongRightTable(), mem, new String[] { "attrB", "attrC"});
+	}
 
 	public PhysicalOperator getJoinOperator() {
 		return new JoinOperator(getRightLoadedTable(), getLeftLoadedTable(), mem);
 	}
-	
+
 	public PhysicalOperator getLongJoinOperator() {
 		return new JoinOperator(getLongRightTable(), getLongLeftTable(), mem);
 	}
@@ -142,16 +145,24 @@ public class TestTP6 {
 		mem = tp6.getMemoryManager();
 	}
 
+	private void intermediaryTest(PhysicalOperator testOperator, List<String[]> expected) {
+		try {
+			List<String[]> tupleArray = tp6.getOperatorTuples(testOperator);
+			assertTrue(pageContentEquals(expected, tupleArray));
+		} catch (NotEnoughMemoryException e) {
+			fail();
+		}
+	}
+	
 	private void synthesizeTest(String testName, PhysicalOperator testOperator, List<String[]> expectedTuples) {
 		System.out.println(testName);
 		try {
 			List<String[]> tupleArray = tp6.getOperatorTuples(testOperator);
-			//System.out.println("Number of reads : " + mem.getNumberOfDiskReadSinceLastReset());
-			if(testOperator instanceof ProjectionOperator) {
-//				tp6.displayPageContent(tupleArray);
-				System.out.println("Expected tuples size " + expectedTuples.size());
-				System.out.println(tupleArray.size());
-				tp6.displayPageContent(tupleArray);
+			// System.out.println("Number of reads : " + mem.getNumberOfDiskReadSinceLastReset());
+			// System.out.println("Number of writes : " + mem.getNumberofWriteDiskSinceLastReset());
+			if (testName.contains("long")) {
+				System.out.println("Expected size " + expectedTuples.size());
+				System.out.println("Actual size " + tupleArray.size());
 			}
 			assertTrue(pageContentEquals(expectedTuples, tupleArray));
 		} catch (NotEnoughMemoryException e) {
@@ -215,17 +226,18 @@ public class TestTP6 {
 
 		synthesizeTest("Test join", join, expectedArray);
 	}
+
 	
-	@Test
 	/**
 	 * Just testing free / allocation mecanism here, not hoping to get a result
 	 * equivalent to the expectedArray
 	 */
+	@Test
 	public void testCorrectLongJoinOperatorWithMemory() {
 		PhysicalOperator join = getLongJoinOperator();
 		List<String[]> expectedArray = new ArrayList<>();
 
-		for(int i = 0; i < REPEAT; i++) {
+		for (int i = 0; i < REPEAT; i++) {
 			expectedArray.add(new String[] { "a2", "b5", "c2", "e6", "d3" });
 			expectedArray.add(new String[] { "a3", "b8", "c7", "e9", "d5" });
 			expectedArray.add(new String[] { "a5", "b1", "c3", "e4", "d1" });
@@ -234,14 +246,55 @@ public class TestTP6 {
 		synthesizeTest("Test Long join", join, expectedArray);
 	}
 	
+	/**
+	 * Testing operator combinations
+	 */
+	@Test
+	public void testProjectionAfterSelection() {
+		PhysicalOperator sel = getLongSelectionOperator();
+		PhysicalOperator proj = new ProjectionOperator(sel, mem, "attrA", "attrC");
+		
+		List<String[]> intermediaryResult = new ArrayList<>();
+		for(int i = 0; i < REPEAT; i++)
+			intermediaryResult.add(new String[] { "a5", "b1", "c3" });
+		
+		intermediaryTest(sel, intermediaryResult);
+		sel.reset();
+		
+		List<String[]> expectedArray = new ArrayList<>();
+		for (int i = 0; i < REPEAT; i++)
+			expectedArray.add(new String[] { "a5", "c3" });
+		synthesizeTest("Test projection on a selection", proj, expectedArray);
+	}
 	
+	@Test
+	public void testSelectionAfterProjection() {
+		PhysicalOperator proj = getProjectionOnBAndCAttributes();
+		PhysicalOperator sel = new SelectionOperator(proj, "attrC", "c7", ComparisonOperator.EQUAL, mem);
+		
+		List<String[]> intermediaryResult = new ArrayList<>();
+		for(int i = 0; i < REPEAT; i++) {
+			intermediaryResult.add(new String[] { "b1", "c3" });
+			intermediaryResult.add(new String[] { "b4", "c6" });
+			intermediaryResult.add(new String[] { "b5", "c2" });
+			intermediaryResult.add(new String[] { "b8", "c7" });
+		}
+		
+		intermediaryTest(proj, intermediaryResult);
+		proj.reset();
+		
+		List<String[]> expectedArray = new ArrayList<>();
+		for (int i = 0; i < REPEAT; i++)
+			expectedArray.add(new String[] { "b8", "c7" });
+		synthesizeTest("Test selection on a projection", sel, expectedArray);
+	}
+
 	/**
 	 *
 	 * MME BONEVA TESTS
 	 * 
 	 */
-	
-	
+
 	@Test
 	public void testParcoursTable() throws IOException, NotEnoughMemoryException {
 
@@ -277,7 +330,7 @@ public class TestTP6 {
 
 	@Test
 	public void testSelection1() throws IOException, NotEnoughMemoryException {
-
+		// System.out.println("selection operator");
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		MemoryManager mem = new SimpleMemoryManager(100, 2);
 		DefaultRelation rel = new DefaultRelation(schema, mem);
@@ -291,39 +344,36 @@ public class TestTP6 {
 
 		SequentialAccessOnARelationOperator tableOp = new SequentialAccessOnARelationOperator(rel, mem);
 		SelectionOperator sel = new SelectionOperator(tableOp, "ra", "a1", ComparisonOperator.EQUAL, mem);
-		System.out.println("selection operator");
+
 		int pageNb;
 		while ((pageNb = sel.nextPage()) != -1) {
 			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
-			
-			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
-//				System.out.println(Arrays.toString(tuple));
-			}
+
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
+				;
 			mem.releasePage(pageNb, false);
 		}
-		System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
+		// System.out.println("Number of operations : " +
+		// mem.getNumberOfDiskReadSinceLastReset());
 
-		System.out.println("RESET");
+		// System.out.println("RESET");
 
 		List<String[]> result = new ArrayList<>();
 		sel.reset();
 		while ((pageNb = sel.nextPage()) != -1) {
 			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
-			String[] tuple;
-			while ((tuple = page.nextTuple()) != null) {
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
 				result.add(tuple);
-//				System.out.println(Arrays.toString(tuple));
-			}
 			mem.releasePage(pageNb, false);
 		}
 		assertEquals(3, result.size());
 	}
-	
+
 	@Test
 	public void testProjection1() throws IOException, NotEnoughMemoryException {
-
+		// System.out.println("projection operator");
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		MemoryManager mem = new SimpleMemoryManager(2, 2);
 		DefaultRelation rel = new DefaultRelation(schema, mem);
@@ -336,34 +386,28 @@ public class TestTP6 {
 
 		SequentialAccessOnARelationOperator tableOp = new SequentialAccessOnARelationOperator(rel, mem);
 		ProjectionOperator proj = new ProjectionOperator(tableOp, mem, "ra");
-		System.out.println("projection operator");
+
 		int pageNb;
 		while ((pageNb = proj.nextPage()) != -1) {
-			System.out.println("Page address " + pageNb);
 			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
-			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
-				System.out.println(Arrays.toString(tuple));
-//				System.out.println(Arrays.toString(tuple));
-			}
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
+				;
 			mem.releasePage(pageNb, false);
 		}
-		
-		System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
 
-		System.out.println("RESET");
+		// System.out.println("Number of operations : " +
+		// mem.getNumberOfDiskReadSinceLastReset());
+
+		// System.out.println("RESET");
 
 		List<String[]> result = new ArrayList<>();
 		proj.reset();
 		while ((pageNb = proj.nextPage()) != -1) {
-			System.out.println("Page address " + pageNb);
 			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
-			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
-				System.out.println(Arrays.toString(tuple));
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
 				result.add(tuple);
-//				System.out.println(Arrays.toString(tuple));
-			}
 			mem.releasePage(pageNb, false);
 		}
 		assertEquals(9, result.size());
@@ -374,7 +418,7 @@ public class TestTP6 {
 
 	@Test
 	public void testJoin() throws IOException, NotEnoughMemoryException {
-
+		System.out.println("join operator");
 		RelationSchema schema1 = new DefaultRelationSchema("RELONE", "ra", "rb");
 		RelationSchema schema2 = new DefaultRelationSchema("RELTWO", "ra", "rc");
 		MemoryManager mem = new SimpleMemoryManager(20, 20);
@@ -405,15 +449,12 @@ public class TestTP6 {
 		while ((pageNb = join.nextPage()) != -1) {
 			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
-			String[] tuple;
-			while ((tuple = page.nextTuple()) != null) {
-//				System.out.println(Arrays.toString(tuple));
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
 				result.add(tuple);
-			}
 			mem.releasePage(pageNb, false);
 		}
 
-		assertEquals(27, result.size()); 
+		assertEquals(27, result.size());
 
 		System.out.println("Number of operations: " + mem.getNumberOfDiskReadSinceLastReset());
 	}

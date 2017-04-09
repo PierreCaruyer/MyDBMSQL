@@ -77,27 +77,25 @@ public class JoinOperator implements PhysicalOperator {
 
 	@Override
 	public void reset() {
+		rightTupleCount = 0;
+		leftTupleCount = 0;
+		leftPageAddress = -1;
+		rightPageAddress = -1;
 		left.reset();
 		right.reset();
 	}
 
 	@Override
 	public int nextPage() {
-		if (leftPageAddress == -1) {
-//			System.out.println("left page address less than 0");
+		if (leftPageAddress == -1)
 			return -1;
-		}
 		if (rightPageAddress == -1 || rightTupleCount == 0) {
-//			System.out.println("1-right page address less than 0");
 			rightPageAddress = right.nextPage();
 			if (rightPageAddress == -1) {
-//				System.out.println("2-right page address less than 0");
 				right.reset();
 				rightPageAddress = right.nextPage();
-				if (rightPageAddress == -1) {
-//					System.out.println("3-right page address less than 0");
+				if (rightPageAddress == -1)
 					return -1;
-				}
 			}
 		}
 		try {
@@ -121,35 +119,33 @@ public class JoinOperator implements PhysicalOperator {
 			for (; leftTupleCount > 0; leftTupleCount--)
 				leftPage.nextTuple();
 
-			while (!page.isFull()) {
+			while (!page.isFull() && leftPageAddress != -1) {
 				rightTuple = rightPage.nextTuple();
 				rightTupleCount++;
-//				System.out.println("Next right tuple : " + Arrays.toString(rightTuple));
 				if (rightTuple == null) {
 					mem.releasePage(rightPageAddress, false);
 					rightPageAddress = right.nextPage();
 					if (rightPageAddress == -1) {
 						right.reset();
 						rightPageAddress = right.nextPage();
-						if (rightPageAddress == -1) {
-//							System.out.println("This code is never reached");
+						if (rightPageAddress == -1) { //reachable only if the right operator has no tuple at all 
 							mem.releasePage(leftPageAddress, false); // right page has already been released at this point
 							break;
 						}
 						leftTuple = leftPage.nextTuple();
 						leftTupleCount++;
-//						System.out.println("Left tuple " + Arrays.toString(leftTuple));
 						if (leftTuple == null) {
 							mem.releasePage(leftPageAddress, false);
 							leftPageAddress = left.nextPage();
 							if (leftPageAddress == -1) {
-//								System.out.println("Left page address set to -1");
+								System.out.println("Left page address set to -1");
 								break;
 							}
 							leftTupleCount = 0;
 							leftPage = mem.loadPage(leftPageAddress);
 							leftPage.switchToReadMode();
 							leftTuple = leftPage.nextTuple();
+							leftTupleCount++;
 						}
 					}
 					rightTupleCount = 0;
@@ -158,10 +154,6 @@ public class JoinOperator implements PhysicalOperator {
 					rightTuple = rightPage.nextTuple();
 					rightTupleCount++;
 				}
-
-//				if (leftTuple == null || rightTuple == null)
-//					continue;
-
 				tuple = getComputedTuples(leftTuple, rightTuple);
 
 				if (tuple != null)
@@ -184,6 +176,9 @@ public class JoinOperator implements PhysicalOperator {
 	}
 
 	private String[] getComputedTuples(String[] tuple1, String[] tuple2) {
+		if(tuple1 == null || tuple2 == null)
+			return null;
+		
 		// Find the common attributes between left and right
 		ArrayList<String> inter = new ArrayList<String>();
 		for (String attr : rightSorts) {

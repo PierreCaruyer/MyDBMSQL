@@ -1,6 +1,7 @@
 package univlille.m1info.abd.tp6;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import univlille.m1info.abd.phys.MemoryManager;
@@ -23,7 +24,6 @@ public class TP6 {
 		List<String[]> tuples = new ArrayList<>();
 		while(pageAddress != -1) {
 			Page p = mem.loadPage(pageAddress);
-			
 			List<String[]> retrievedTuples = retrievePageTuples(p);
 			
 			for(String[] t : retrievedTuples)
@@ -49,14 +49,7 @@ public class TP6 {
 	
 	public void displayPageContent(List<String[]> tuples) {
 		for(String[] tuple : tuples)
-			printTuple(tuple);
-	}
-	
-	public void printTuple(String[] t) {
-		System.out.print("[");
-		for(String a : t)
-			System.out.print(a + ", ");
-		System.out.println("]");
+			Arrays.toString(tuple);
 	}
 	
 	public MemoryManager getMemoryManager() {
