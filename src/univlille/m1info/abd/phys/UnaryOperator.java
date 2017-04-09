@@ -14,49 +14,17 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 	protected final int sortsLength;
 	protected final PhysicalOperator operator;
 	protected int operatorTuplePtr;
-	protected String[] firstTuple;
-	protected boolean operatorAtEnd;
 	
 	public UnaryOperator(PhysicalOperator operator, MemoryManager mem, int sortsLength) {
 		this.operator = operator;
 		this.mem = mem;
 		this.sortsLength = sortsLength;
-		this.firstTuple = null;
 		this.operatorTuplePtr = 0;
-		this.operatorAtEnd = false;
 	}
 	
 	@Override
 	public String[] nextTuple() {
-		if(pageAddress < 0) {
-			pageAddress = nextPage();
-			if(pageAddress < 0)
-				return null;
-		}
-		
-		try {
-			Page page = mem.loadPage(pageAddress);
-			String[] tuple = page.nextTuple();
-			
-			if(tuple == firstTuple) {
-				mem.releasePage(pageAddress, false);
-				pageAddress = nextPage();
-				if(pageAddress < 0)
-					return null;
-				
-				page = mem.loadPage(pageAddress);
-				firstTuple = null;
-				tuple = page.nextTuple();
-				return tuple;
-			}
-			
-			if(firstTuple == null)
-				firstTuple = tuple;
-			
-			return tuple;
-		} catch (NotEnoughMemoryException e) {
-			return null;
-		}
+		return null;
 	}
 	
 	@Override
@@ -64,6 +32,9 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 	
 	@Override
 	public void reset() {
+		pageAddress = -1;
+		operatorTuplePtr = 0;
+		operatorPageAddress = -1;
 		operator.reset();
 	}
 	
@@ -83,34 +54,29 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 				operatorPage.nextTuple();
 			
 			//Goes on until the page is full
-			while(operatorPageAddress != -1 && !page.isFull()) {
-				
+			while(!page.isFull()) {
 				operatorTuple = operatorPage.nextTuple();
-				operatorTuplePtr++;
-				
 				/*Page.nextTuple() loops : when it reaches its end, it rewinds to the first tuple of the page
 				 * Therefore if the current tuple has the same reference than the first tuple,
 				 * all the tuples of this page have been computed 
 				 */
 				if(operatorTuple == null) {
 					mem.releasePage(operatorPageAddress, false);
+					System.out.println("Operator page address " + operatorPageAddress);
 					operatorPageAddress = operator.nextPage();
 					if(operatorPageAddress == -1)//gets out of the loop
 						break;
-					firstTuple = null;
 					operatorTuplePtr = 0;
 					operatorPage = mem.loadPage(operatorPageAddress);
-					
 					operatorPage.switchToReadMode();
-					continue;
+					operatorTuple = operatorPage.nextTuple();
 				}
-				
+				operatorTuplePtr++;
 				tuple = getComputedTuple(operatorTuple);
-		
+				
 				if(tuple != null)
 					page.AddTuple(tuple);
 			}
-			
 			if(page.getNumberofTuple() != 0) {
 				int address = page.getAddressPage();
 				

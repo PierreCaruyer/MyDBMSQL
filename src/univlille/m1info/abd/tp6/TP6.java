@@ -3,7 +3,6 @@ package univlille.m1info.abd.tp6;
 import java.util.ArrayList;
 import java.util.List;
 
-import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.NotEnoughMemoryException;
 import univlille.m1info.abd.phys.Page;
@@ -23,8 +22,6 @@ public class TP6 {
 		int pageAddress = operator.nextPage();
 		List<String[]> tuples = new ArrayList<>();
 		while(pageAddress != -1) {
-			if(operator instanceof JoinOperator)
-				System.out.println("Page address " + pageAddress);
 			Page p = mem.loadPage(pageAddress);
 			
 			List<String[]> retrievedTuples = retrievePageTuples(p);

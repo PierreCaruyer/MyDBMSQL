@@ -10,13 +10,11 @@ public class SelectionOperator extends UnaryOperator implements PhysicalOperator
 	private final String constantValue;
 	private int attributeIndex = -1;
 	private final RelationSchema schema;
-	private final PhysicalOperator operator;
 
 	public SelectionOperator(PhysicalOperator operator, String attrName, String constantValue, ComparisonOperator comparator, MemoryManager mem) {
 		super(operator, mem, operator.resultSchema().getSort().length);
 		this.constantValue = constantValue;
 		this.comparator = comparator;
-		this.operator = operator;
 
 		String[] sorts = operator.resultSchema().getSort();
 		schema = new VolatileRelationSchema(sorts);
@@ -61,7 +59,7 @@ public class SelectionOperator extends UnaryOperator implements PhysicalOperator
 
 	@Override
 	public void reset() {
-		operator.reset();
+		super.reset();
 	}
 
 	@Override
@@ -71,6 +69,8 @@ public class SelectionOperator extends UnaryOperator implements PhysicalOperator
 	
 	@Override
 	protected String[] getComputedTuple(String[] tuple) {
+		if(tuple == null)
+			return null;
 		if(computeComparison(tuple[attributeIndex], constantValue))
 			return tuple;
 		return null;

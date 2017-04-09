@@ -10,11 +10,9 @@ public class ProjectionOperator extends UnaryOperator implements PhysicalOperato
 
 	private final RelationSchema schema;
 	private final String[] attributeNames;
-	private final PhysicalOperator operator;
 
 	public ProjectionOperator(PhysicalOperator operator, MemoryManager mem, String ... attrNames) {
 		super(operator, mem, attrNames.length);
-		this.operator = operator;
 		attributeNames = attrNames;
 		operatorPageAddress = -1;
 		operatorTupleCount = 0;
@@ -34,7 +32,7 @@ public class ProjectionOperator extends UnaryOperator implements PhysicalOperato
 
 	@Override
 	public void reset() {
-		operator.reset();
+		super.reset();
 	}
 
 	@Override
@@ -44,11 +42,13 @@ public class ProjectionOperator extends UnaryOperator implements PhysicalOperato
 
 	@Override
 	protected String[] getComputedTuple(String[] currentTuple) {
+		if(currentTuple == null) {
+			System.out.println("Operator tuple is null");
+			return null;
+		}
+		
 		HashMap<String,String> mapOperator = new HashMap<String, String>();
 		ArrayList<String> tuple = new ArrayList<String>();
-		
-		if(currentTuple == null)
-			return null;
 
 		String[] sorts = operator.resultSchema().getSort();
 

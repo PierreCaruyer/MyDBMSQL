@@ -41,6 +41,7 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator {
 	@Override
 	public void reset() {
 		pageInitialized = false;
+		pageAddress = -1;
 	}
 
 	@Override

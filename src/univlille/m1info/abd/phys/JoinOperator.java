@@ -8,19 +8,19 @@ import univlille.m1info.abd.schema.VolatileRelationSchema;
 
 public class JoinOperator implements PhysicalOperator {
 
-	private String[] leftTuple;
-	private final PhysicalOperator right;
-	private final PhysicalOperator left;
-	private final RelationSchema schema;
-	private final RelationSchema schemaLeft;
-	private final RelationSchema schemaRight;
-	private ArrayList<String> joinSorts;
-	private final String[] leftSorts;
+	protected String[] leftTuple;
+	protected final PhysicalOperator right;
+	protected final PhysicalOperator left;
+	protected final RelationSchema schema;
+	protected final RelationSchema schemaLeft;
+	protected final RelationSchema schemaRight;
+	protected ArrayList<String> joinSorts;
+	protected final String[] leftSorts;
 	private final String[] rightSorts;
-	private final MemoryManager mem;
-
-	private int leftPageAddress = -1, rightTupleCount = 0;
-	private int rightPageAddress = -1, leftTupleCount = 0;
+	protected final MemoryManager mem;
+	
+	protected int leftPageAddress = -1, rightTupleCount = 0;
+	protected int rightPageAddress = -1, leftTupleCount = 0;
 
 	public JoinOperator(PhysicalOperator right, PhysicalOperator left, MemoryManager mem) {
 		this.left = left;
@@ -84,18 +84,18 @@ public class JoinOperator implements PhysicalOperator {
 	@Override
 	public int nextPage() {
 		if (leftPageAddress == -1) {
-			System.out.println("left page address less than 0");
+//			System.out.println("left page address less than 0");
 			return -1;
 		}
 		if (rightPageAddress == -1 || rightTupleCount == 0) {
-			System.out.println("1-right page address less than 0");
+//			System.out.println("1-right page address less than 0");
 			rightPageAddress = right.nextPage();
 			if (rightPageAddress == -1) {
-				System.out.println("2-right page address less than 0");
+//				System.out.println("2-right page address less than 0");
 				right.reset();
 				rightPageAddress = right.nextPage();
 				if (rightPageAddress == -1) {
-					System.out.println("3-right page address less than 0");
+//					System.out.println("3-right page address less than 0");
 					return -1;
 				}
 			}
@@ -115,20 +115,16 @@ public class JoinOperator implements PhysicalOperator {
 			rightTupleCount = (rightTupleCount > 0) ? rightTupleCount - 1 : rightTupleCount;
 
 			// Initialize operator pages and their iterator
-			for (; rightTupleCount > 0; rightTupleCount--) {
-				System.out.println("next right tuple");
+			for (; rightTupleCount > 0; rightTupleCount--)
 				rightPage.nextTuple();
-			}
 
-			for (; leftTupleCount > 0; leftTupleCount--) {
-				System.out.println("next left tuple");
+			for (; leftTupleCount > 0; leftTupleCount--)
 				leftPage.nextTuple();
-			}
 
 			while (!page.isFull()) {
 				rightTuple = rightPage.nextTuple();
 				rightTupleCount++;
-				System.out.println("Next right tuple : " + Arrays.toString(rightTuple));
+//				System.out.println("Next right tuple : " + Arrays.toString(rightTuple));
 				if (rightTuple == null) {
 					mem.releasePage(rightPageAddress, false);
 					rightPageAddress = right.nextPage();
@@ -136,16 +132,20 @@ public class JoinOperator implements PhysicalOperator {
 						right.reset();
 						rightPageAddress = right.nextPage();
 						if (rightPageAddress == -1) {
+//							System.out.println("This code is never reached");
 							mem.releasePage(leftPageAddress, false); // right page has already been released at this point
 							break;
 						}
 						leftTuple = leftPage.nextTuple();
 						leftTupleCount++;
+//						System.out.println("Left tuple " + Arrays.toString(leftTuple));
 						if (leftTuple == null) {
 							mem.releasePage(leftPageAddress, false);
 							leftPageAddress = left.nextPage();
-							if (leftPageAddress == -1)
+							if (leftPageAddress == -1) {
+//								System.out.println("Left page address set to -1");
 								break;
+							}
 							leftTupleCount = 0;
 							leftPage = mem.loadPage(leftPageAddress);
 							leftPage.switchToReadMode();
@@ -155,11 +155,12 @@ public class JoinOperator implements PhysicalOperator {
 					rightTupleCount = 0;
 					rightPage = mem.loadPage(rightPageAddress);
 					rightPage.switchToReadMode();
-					continue;
+					rightTuple = rightPage.nextTuple();
+					rightTupleCount++;
 				}
 
-				if (leftTuple == null || rightTuple == null)
-					continue;
+//				if (leftTuple == null || rightTuple == null)
+//					continue;
 
 				tuple = getComputedTuples(leftTuple, rightTuple);
 
@@ -167,18 +168,16 @@ public class JoinOperator implements PhysicalOperator {
 					page.AddTuple(tuple);
 			}
 
+			int pageAddress = page.getAddressPage();
 			if (page.getNumberofTuple() != 0) {
-				int pageAddress = page.getAddressPage();
-
 				mem.PutinMemory(page, page.getAddressPage());
 				mem.releasePage(page.getAddressPage(), false);
 
 				tuple = leftTuple = rightTuple = null;
 				rightPage = leftPage = page = null;
-
-				return pageAddress;
-			}
-			return -1;
+			} else
+				pageAddress = -1;
+			return pageAddress;
 		} catch (NotEnoughMemoryException e) {
 			return -1;
 		}
