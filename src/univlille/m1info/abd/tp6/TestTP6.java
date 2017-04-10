@@ -145,25 +145,14 @@ public class TestTP6 {
 		mem = tp6.getMemoryManager();
 	}
 
-	private void intermediaryTest(PhysicalOperator testOperator, List<String[]> expected) {
-		try {
-			List<String[]> tupleArray = tp6.getOperatorTuples(testOperator);
-			assertTrue(pageContentEquals(expected, tupleArray));
-		} catch (NotEnoughMemoryException e) {
-			fail();
-		}
-	}
-	
-	private void synthesizeTest(String testName, PhysicalOperator testOperator, List<String[]> expectedTuples) {
-		System.out.println(testName);
+	private void synthesizeTest(String testName, PhysicalOperator testOperator, List<String[]> expectedTuples, boolean finalTest) {
+		if(finalTest)
+			System.out.println("----------" + testName + "----------");
 		try {
 			List<String[]> tupleArray = tp6.getOperatorTuples(testOperator);
 			// System.out.println("Number of reads : " + mem.getNumberOfDiskReadSinceLastReset());
 			// System.out.println("Number of writes : " + mem.getNumberofWriteDiskSinceLastReset());
-			if (testName.contains("long")) {
-				System.out.println("Expected size " + expectedTuples.size());
-				System.out.println("Actual size " + tupleArray.size());
-			}
+			assertEquals(tupleArray.size(), expectedTuples.size());
 			assertTrue(pageContentEquals(expectedTuples, tupleArray));
 		} catch (NotEnoughMemoryException e) {
 			fail();
@@ -175,7 +164,7 @@ public class TestTP6 {
 		PhysicalOperator selection = getShortSelectionOperator();
 		List<String[]> expectedArray = new ArrayList<>();
 		expectedArray.add(new String[] { "a5", "b1", "c3" });
-		synthesizeTest("Test short selection", selection, expectedArray);
+		synthesizeTest("Test short selection", selection, expectedArray, true);
 	}
 
 	@Test
@@ -184,7 +173,7 @@ public class TestTP6 {
 		List<String[]> expectedArray = new ArrayList<>();
 		for (int i = 0; i < REPEAT; i++)
 			expectedArray.add(new String[] { "a5", "b1", "c3" });
-		synthesizeTest("Test long selection", selection, expectedArray);
+		synthesizeTest("Test long selection", selection, expectedArray, true);
 	}
 
 	@Test
@@ -197,7 +186,7 @@ public class TestTP6 {
 		expectedArray.add(new String[] { "a2", "c2" });
 		expectedArray.add(new String[] { "a3", "c7" });
 
-		synthesizeTest("Test short projection", projection, expectedArray);
+		synthesizeTest("Test short projection", projection, expectedArray, true);
 	}
 
 	@Test
@@ -212,7 +201,7 @@ public class TestTP6 {
 			expectedArray.add(new String[] { "a3", "c7" });
 		}
 
-		synthesizeTest("Test long projection", projection, expectedArray);
+		synthesizeTest("Test long projection", projection, expectedArray, true);
 	}
 
 	@Test
@@ -224,7 +213,7 @@ public class TestTP6 {
 		expectedArray.add(new String[] { "a3", "b8", "c7", "e9", "d5" });
 		expectedArray.add(new String[] { "a5", "b1", "c3", "e4", "d1" });
 
-		synthesizeTest("Test join", join, expectedArray);
+		synthesizeTest("Test join", join, expectedArray, true);
 	}
 
 	
@@ -243,7 +232,7 @@ public class TestTP6 {
 			expectedArray.add(new String[] { "a5", "b1", "c3", "e4", "d1" });
 		}
 
-		synthesizeTest("Test Long join", join, expectedArray);
+		synthesizeTest("Test Long join", join, expectedArray, true);
 	}
 	
 	/**
@@ -258,13 +247,13 @@ public class TestTP6 {
 		for(int i = 0; i < REPEAT; i++)
 			intermediaryResult.add(new String[] { "a5", "b1", "c3" });
 		
-		intermediaryTest(sel, intermediaryResult);
+		synthesizeTest("", sel, intermediaryResult, false);
 		sel.reset();
 		
 		List<String[]> expectedArray = new ArrayList<>();
 		for (int i = 0; i < REPEAT; i++)
 			expectedArray.add(new String[] { "a5", "c3" });
-		synthesizeTest("Test projection on a selection", proj, expectedArray);
+		synthesizeTest("Test projection on a selection", proj, expectedArray, true);
 	}
 	
 	@Test
@@ -280,13 +269,13 @@ public class TestTP6 {
 			intermediaryResult.add(new String[] { "b8", "c7" });
 		}
 		
-		intermediaryTest(proj, intermediaryResult);
+		synthesizeTest("", proj, intermediaryResult, false);
 		proj.reset();
 		
 		List<String[]> expectedArray = new ArrayList<>();
 		for (int i = 0; i < REPEAT; i++)
 			expectedArray.add(new String[] { "b8", "c7" });
-		synthesizeTest("Test selection on a projection", sel, expectedArray);
+		synthesizeTest("Test selection on a projection", sel, expectedArray, true);
 	}
 
 	/**
@@ -354,9 +343,7 @@ public class TestTP6 {
 				;
 			mem.releasePage(pageNb, false);
 		}
-		// System.out.println("Number of operations : " +
-		// mem.getNumberOfDiskReadSinceLastReset());
-
+		// System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
 		// System.out.println("RESET");
 
 		List<String[]> result = new ArrayList<>();
@@ -396,9 +383,7 @@ public class TestTP6 {
 			mem.releasePage(pageNb, false);
 		}
 
-		// System.out.println("Number of operations : " +
-		// mem.getNumberOfDiskReadSinceLastReset());
-
+		// System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
 		// System.out.println("RESET");
 
 		List<String[]> result = new ArrayList<>();
@@ -442,26 +427,40 @@ public class TestTP6 {
 		SequentialAccessOnARelationOperator tableOpLeft = new SequentialAccessOnARelationOperator(rel1, mem);
 		SequentialAccessOnARelationOperator tableOpRight = new SequentialAccessOnARelationOperator(rel2, mem);
 
-		List<String[]> result = new ArrayList<>();
-
+		List<String[]> resultArray = new ArrayList<>();
+		resultArray.add(new String[] { "a1", "b1", "c1" });
+		resultArray.add(new String[] { "a1", "b1", "c4" });
+		resultArray.add(new String[] { "a1", "b1", "c7" });
+		resultArray.add(new String[] { "a2", "b2", "c2" });
+		resultArray.add(new String[] { "a2", "b2", "c5" });
+		resultArray.add(new String[] { "a2", "b2", "c8" });
+		resultArray.add(new String[] { "a0", "b3", "c3" });
+		resultArray.add(new String[] { "a0", "b3", "c6" });
+		resultArray.add(new String[] { "a0", "b3", "c9" });
+		resultArray.add(new String[] { "a1", "b4", "c1" });
+		resultArray.add(new String[] { "a1", "b4", "c4" });
+		resultArray.add(new String[] { "a1", "b4", "c7" });
+		resultArray.add(new String[] { "a2", "b5", "c2" });
+		resultArray.add(new String[] { "a2", "b5", "c5" });
+		resultArray.add(new String[] { "a2", "b5", "c8" });
+		resultArray.add(new String[] { "a0", "b6", "c3" });
+		resultArray.add(new String[] { "a0", "b6", "c6" });
+		resultArray.add(new String[] { "a0", "b6", "c9" });
+		resultArray.add(new String[] { "a1", "b7", "c1" });
+		resultArray.add(new String[] { "a1", "b7", "c4" });
+		resultArray.add(new String[] { "a1", "b7", "c7" });
+		resultArray.add(new String[] { "a2", "b8", "c2" });
+		resultArray.add(new String[] { "a2", "b8", "c5" });
+		resultArray.add(new String[] { "a2", "b8", "c8" });
+		resultArray.add(new String[] { "a0", "b9", "c3" });
+		resultArray.add(new String[] { "a0", "b9", "c6" });
+		resultArray.add(new String[] { "a0", "b9", "c9" });
+		
 		JoinOperator join = new JoinOperator(tableOpLeft, tableOpRight, mem);
-		int pageNb;
-		while ((pageNb = join.nextPage()) != -1) {
-			Page page = mem.loadPage(pageNb);
-			page.switchToReadMode();
-			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
-				result.add(tuple);
-			mem.releasePage(pageNb, false);
-		}
-
-		assertEquals(27, result.size());
-
-		System.out.println("Number of operations: " + mem.getNumberOfDiskReadSinceLastReset());
+		synthesizeTest("join operator", join, resultArray, true);
 	}
 
 	public boolean pageContentEquals(List<String[]> expected, List<String[]> actual) {
-		if (expected.size() != actual.size())
-			return false;
 		for (int i = 0; i < expected.size(); i++) {
 			String[] tuple = expected.get(i);
 			String[] actualTuple = expected.get(i);

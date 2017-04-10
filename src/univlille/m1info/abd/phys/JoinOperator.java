@@ -137,10 +137,8 @@ public class JoinOperator implements PhysicalOperator {
 						if (leftTuple == null) {
 							mem.releasePage(leftPageAddress, false);
 							leftPageAddress = left.nextPage();
-							if (leftPageAddress == -1) {
-								System.out.println("Left page address set to -1");
+							if (leftPageAddress == -1)
 								break;
-							}
 							leftTupleCount = 0;
 							leftPage = mem.loadPage(leftPageAddress);
 							leftPage.switchToReadMode();
