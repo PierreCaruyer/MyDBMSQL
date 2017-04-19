@@ -152,7 +152,17 @@ public class TestTP6 {
 			List<String[]> tupleArray = tp6.getOperatorTuples(testOperator);
 			// System.out.println("Number of reads : " + mem.getNumberOfDiskReadSinceLastReset());
 			// System.out.println("Number of writes : " + mem.getNumberofWriteDiskSinceLastReset());
-			assertEquals(tupleArray.size(), expectedTuples.size());
+//			assertEquals(expectedTuples.size(), tupleArray.size());
+//			assertTrue(pageContentEquals(expectedTuples, tupleArray));
+			int pageNb;
+			while ((pageNb = testOperator.nextPage()) != -1) {
+				Page page = mem.loadPage(pageNb);
+				page.switchToReadMode();
+				for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
+					tupleArray.add(tuple);
+				mem.releasePage(pageNb, false);
+			}
+			assertEquals(expectedTuples.size(), tupleArray.size());
 			assertTrue(pageContentEquals(expectedTuples, tupleArray));
 		} catch (NotEnoughMemoryException e) {
 			fail();
@@ -226,7 +236,7 @@ public class TestTP6 {
 		PhysicalOperator join = getLongJoinOperator();
 		List<String[]> expectedArray = new ArrayList<>();
 
-		for (int i = 0; i < REPEAT; i++) {
+		for (int i = 0; i < REPEAT * (REPEAT / 2 + 1); i++) {
 			expectedArray.add(new String[] { "a2", "b5", "c2", "e6", "d3" });
 			expectedArray.add(new String[] { "a3", "b8", "c7", "e9", "d5" });
 			expectedArray.add(new String[] { "a5", "b1", "c3", "e4", "d1" });
@@ -277,16 +287,9 @@ public class TestTP6 {
 			expectedArray.add(new String[] { "b8", "c7" });
 		synthesizeTest("Test selection on a projection", sel, expectedArray, true);
 	}
-
-	/**
-	 *
-	 * MME BONEVA TESTS
-	 * 
-	 */
-
+	
 	@Test
 	public void testParcoursTable() throws IOException, NotEnoughMemoryException {
-
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		MemoryManager mem = new SimpleMemoryManager(2, 2);
 		DefaultRelation rel = new DefaultRelation(schema, mem);
@@ -339,8 +342,7 @@ public class TestTP6 {
 			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
 
-			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
-				;
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) ;
 			mem.releasePage(pageNb, false);
 		}
 		// System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
@@ -378,8 +380,7 @@ public class TestTP6 {
 		while ((pageNb = proj.nextPage()) != -1) {
 			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
-			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
-				;
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) ;
 			mem.releasePage(pageNb, false);
 		}
 
@@ -409,17 +410,15 @@ public class TestTP6 {
 		MemoryManager mem = new SimpleMemoryManager(20, 20);
 
 		List<String[]> tuples1 = new ArrayList<>();
-		for (int i = 1; i <= 9; i++) {
+		for (int i = 1; i <= 9; i++)
 			tuples1.add(new String[] { "a" + (i % 3), "b" + i });
-		}
 
 		DefaultRelation rel1 = new DefaultRelation(schema1, mem);
 		rel1.loadTuples(tuples1);
 
 		List<String[]> tuples2 = new ArrayList<>();
-		for (int i = 1; i <= 9; i++) {
+		for (int i = 1; i <= 9; i++)
 			tuples2.add(new String[] { "a" + (i % 3), "c" + i });
-		}
 
 		DefaultRelation rel2 = new DefaultRelation(schema2, mem);
 		rel2.loadTuples(tuples2);
@@ -428,6 +427,7 @@ public class TestTP6 {
 		SequentialAccessOnARelationOperator tableOpRight = new SequentialAccessOnARelationOperator(rel2, mem);
 
 		List<String[]> resultArray = new ArrayList<>();
+		
 		resultArray.add(new String[] { "a1", "b1", "c1" });
 		resultArray.add(new String[] { "a1", "b1", "c4" });
 		resultArray.add(new String[] { "a1", "b1", "c7" });
@@ -457,17 +457,38 @@ public class TestTP6 {
 		resultArray.add(new String[] { "a0", "b9", "c9" });
 		
 		JoinOperator join = new JoinOperator(tableOpLeft, tableOpRight, mem);
-		synthesizeTest("join operator", join, resultArray, true);
+		int pageNb;
+		while ((pageNb = join.nextPage()) != -1) {
+			Page page = mem.loadPage(pageNb);
+			page.switchToReadMode();
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) ;
+			mem.releasePage(pageNb, false);
+		}
+
+		// System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
+		// System.out.println("RESET");
+
+		List<String[]> result = new ArrayList<>();
+		join.reset();
+		while ((pageNb = join.nextPage()) != -1) {
+			System.out.println("new page");
+			Page page = mem.loadPage(pageNb);
+			page.switchToReadMode();
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
+				result.add(tuple);
+			mem.releasePage(pageNb, false);
+		}
+		assertEquals(resultArray.size(), result.size());
+		assertTrue(pageContentEquals(resultArray, result));
 	}
 
 	public boolean pageContentEquals(List<String[]> expected, List<String[]> actual) {
 		for (int i = 0; i < expected.size(); i++) {
 			String[] tuple = expected.get(i);
 			String[] actualTuple = expected.get(i);
-			for (int j = 0; j < tuple.length; j++) {
+			for (int j = 0; j < tuple.length; j++)
 				if (!tuple[j].equals(actualTuple[j]))
 					return false;
-			}
 		}
 		return true;
 	}

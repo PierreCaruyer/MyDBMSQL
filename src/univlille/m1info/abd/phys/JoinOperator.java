@@ -18,9 +18,9 @@ public class JoinOperator implements PhysicalOperator {
 	protected final String[] leftSorts;
 	private final String[] rightSorts;
 	protected final MemoryManager mem;
-	
+
 	protected int leftPageAddress = -1, rightTupleCount = 0;
-	protected int rightPageAddress = -1, leftTupleCount = 0;
+	protected int rightPageAddress = -1, leftTupleCount = 0, rightFirstPage = -1;
 
 	public JoinOperator(PhysicalOperator right, PhysicalOperator left, MemoryManager mem) {
 		this.left = left;
@@ -35,14 +35,11 @@ public class JoinOperator implements PhysicalOperator {
 		 * Gives the output relation the attributes of both input relations
 		 */
 		joinSorts = new ArrayList<String>(Arrays.asList(leftSorts));
-		for (String attributeName : rightSorts) {
+		for (String attributeName : rightSorts)
 			if (!joinSorts.contains(attributeName))
 				joinSorts.add(attributeName);
-		}
 
 		schema = new VolatileRelationSchema(joinSorts.toArray(new String[joinSorts.size()]));
-		// leftTuple = left.nextTuple(); // Initialising leftTuple to a default
-		// value
 		leftPageAddress = left.nextPage();
 	}
 
@@ -79,10 +76,10 @@ public class JoinOperator implements PhysicalOperator {
 	public void reset() {
 		rightTupleCount = 0;
 		leftTupleCount = 0;
-		leftPageAddress = -1;
 		rightPageAddress = -1;
 		left.reset();
 		right.reset();
+		leftPageAddress = left.nextPage();
 	}
 
 	@Override
@@ -92,97 +89,108 @@ public class JoinOperator implements PhysicalOperator {
 		if (rightPageAddress == -1 || rightTupleCount == 0) {
 			rightPageAddress = right.nextPage();
 			if (rightPageAddress == -1) {
-				right.reset();
-				rightPageAddress = right.nextPage();
+				resetRightOperator();
 				if (rightPageAddress == -1)
 					return -1;
 			}
 		}
+		if (rightFirstPage == -1)
+			rightFirstPage = rightPageAddress;
 		try {
 			Page page = mem.NewPage(joinSorts.size());
-			Page leftPage = mem.loadPage(leftPageAddress);
-			Page rightPage = mem.loadPage(rightPageAddress);
+			Page leftPage = loadOperatorPage(leftPageAddress);
+			Page rightPage = loadOperatorPage(rightPageAddress);
 			String[] leftTuple = null, rightTuple = null, tuple = null;
-
+			
 			// Set the first tuples
-			leftPage.switchToReadMode();
 			leftTuple = leftPage.nextTuple();
 			leftTupleCount = (leftTupleCount > 0) ? leftTupleCount - 1 : leftTupleCount;
 
-			rightPage.switchToReadMode();
-			rightTupleCount = (rightTupleCount > 0) ? rightTupleCount - 1 : rightTupleCount;
-
 			// Initialize operator pages and their iterator
-			for (; rightTupleCount > 0; rightTupleCount--)
+			for (; rightTupleCount >0; rightTupleCount--)
 				rightPage.nextTuple();
 
 			for (; leftTupleCount > 0; leftTupleCount--)
 				leftPage.nextTuple();
-
-			while (!page.isFull() && leftPageAddress != -1) {
-				rightTuple = rightPage.nextTuple();
-				rightTupleCount++;
-				if (rightTuple == null) {
-					mem.releasePage(rightPageAddress, false);
-					rightPageAddress = right.nextPage();
+			
+			while (!page.isFull()) {				
+				if ((rightTuple = nextOperatorTuple(right, rightPage, false)) == null) {
+					rightPageAddress = releaseOperatorPage(right, rightPageAddress);
 					if (rightPageAddress == -1) {
-						right.reset();
-						rightPageAddress = right.nextPage();
-						if (rightPageAddress == -1) { //reachable only if the right operator has no tuple at all 
+						resetRightOperator();
+						if (rightPageAddress == -1) { // reachable only if the right operator has no tuple at all
 							mem.releasePage(leftPageAddress, false); // right page has already been released at this point
 							break;
 						}
-						leftTuple = leftPage.nextTuple();
-						leftTupleCount++;
-						if (leftTuple == null) {
-							mem.releasePage(leftPageAddress, false);
-							leftPageAddress = left.nextPage();
+						if ((leftTuple = nextOperatorTuple(left, leftPage, false)) == null) {
+							leftPageAddress = releaseOperatorPage(left, leftPageAddress);
 							if (leftPageAddress == -1)
 								break;
-							leftTupleCount = 0;
-							leftPage = mem.loadPage(leftPageAddress);
-							leftPage.switchToReadMode();
-							leftTuple = leftPage.nextTuple();
-							leftTupleCount++;
+							leftPage = loadOperatorPage(leftPageAddress);
+							leftTuple = nextOperatorTuple(left, leftPage, true);
 						}
 					}
-					rightTupleCount = 0;
-					rightPage = mem.loadPage(rightPageAddress);
-					rightPage.switchToReadMode();
-					rightTuple = rightPage.nextTuple();
-					rightTupleCount++;
+					rightPage = loadOperatorPage(rightPageAddress);
+					rightTuple = nextOperatorTuple(right, rightPage, true);
 				}
-				tuple = getComputedTuples(leftTuple, rightTuple);
 
-				if (tuple != null)
-					page.AddTuple(tuple);
+				if ((tuple = getComputedTuples(leftTuple, rightTuple)) == null)
+					continue;
+				
+				page.AddTuple(tuple);
 			}
 
-			int pageAddress = page.getAddressPage();
-			if (page.getNumberofTuple() != 0) {
-				mem.PutinMemory(page, page.getAddressPage());
-				mem.releasePage(page.getAddressPage(), false);
-
-				tuple = leftTuple = rightTuple = null;
-				rightPage = leftPage = page = null;
-			} else
-				pageAddress = -1;
-			return pageAddress;
+			if (page.getNumberofTuple() == 0)
+				return -1;
+			
+			mem.PutinMemory(page, page.getAddressPage());
+			mem.releasePage(page.getAddressPage(), false);
+			
+			return page.getAddressPage();
 		} catch (NotEnoughMemoryException e) {
 			return -1;
 		}
 	}
 
+	private String[] nextOperatorTuple(PhysicalOperator op, Page page, boolean reset) {
+		if (op == right) {
+			if (reset)
+				rightTupleCount = 0;
+			rightTupleCount++;
+		} else {
+			if (reset)
+				leftTupleCount = 0;
+			leftTupleCount++;
+		}
+		return page.nextTuple();
+	}
+
+	private int releaseOperatorPage(PhysicalOperator operator, int pageAddress) {
+		mem.releasePage(pageAddress, false);
+		return operator.nextPage();
+	}
+
+	private void resetRightOperator() {
+		right.reset();
+		rightPageAddress = right.nextPage();
+	}
+
+	private Page loadOperatorPage(int pageAddress) throws NotEnoughMemoryException {
+		Page page = mem.loadPage(pageAddress);
+		page.switchToReadMode();
+		return page;
+	}
+
 	private String[] getComputedTuples(String[] tuple1, String[] tuple2) {
-		if(tuple1 == null || tuple2 == null)
+		if (tuple1 == null || tuple2 == null)
 			return null;
-		
+
 		// Find the common attributes between left and right
 		ArrayList<String> inter = new ArrayList<String>();
-		for (String attr : rightSorts) {
+		for (String attr : rightSorts)
 			if (Arrays.asList(leftSorts).contains(attr))
 				inter.add(attr);
-		}
+
 		// Check the joint
 		boolean isJoin = true;
 		for (String attr : inter) {
