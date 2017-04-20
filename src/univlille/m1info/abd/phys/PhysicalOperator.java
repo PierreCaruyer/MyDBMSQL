@@ -34,6 +34,5 @@ public interface PhysicalOperator {
 	 * 
 	 * @return
 	 */
-	public int nextPage();
-	
+	public int nextPage();	
 }

@@ -20,7 +20,7 @@ public class JoinOperator implements PhysicalOperator {
 	protected final MemoryManager mem;
 
 	protected int leftPageAddress = -1, rightTupleCount = 0;
-	protected int rightPageAddress = -1, leftTupleCount = 0, rightFirstPage = -1;
+	protected int rightPageAddress = -1, leftTupleCount = 0;
 
 	public JoinOperator(PhysicalOperator right, PhysicalOperator left, MemoryManager mem) {
 		this.left = left;
@@ -64,7 +64,7 @@ public class JoinOperator implements PhysicalOperator {
 		if (leftTuple == null || rightTuple == null)
 			return null;
 
-		return getComputedTuples(leftTuple, rightTuple);
+		return getComputedTuple(leftTuple, rightTuple);
 	}
 
 	@Override
@@ -94,58 +94,39 @@ public class JoinOperator implements PhysicalOperator {
 					return -1;
 			}
 		}
-		if (rightFirstPage == -1)
-			rightFirstPage = rightPageAddress;
 		try {
-			Page page = mem.NewPage(joinSorts.size());
-			Page leftPage = loadOperatorPage(leftPageAddress);
-			Page rightPage = loadOperatorPage(rightPageAddress);
+			Page page = mem.NewPage(joinSorts.size()), leftPage = null, rightPage = null;
 			String[] leftTuple = null, rightTuple = null, tuple = null;
-			
-			// Set the first tuples
-			leftTuple = leftPage.nextTuple();
-			leftTupleCount = (leftTupleCount > 0) ? leftTupleCount - 1 : leftTupleCount;
 
-			// Initialize operator pages and their iterator
-			for (; rightTupleCount >0; rightTupleCount--)
-				rightPage.nextTuple();
-
-			for (; leftTupleCount > 0; leftTupleCount--)
-				leftPage.nextTuple();
-			
-			while (!page.isFull()) {				
-				if ((rightTuple = nextOperatorTuple(right, rightPage, false)) == null) {
-					rightPageAddress = releaseOperatorPage(right, rightPageAddress);
-					if (rightPageAddress == -1) {
-						resetRightOperator();
-						if (rightPageAddress == -1) { // reachable only if the right operator has no tuple at all
-							mem.releasePage(leftPageAddress, false); // right page has already been released at this point
-							break;
+			while(leftPageAddress != -1 && !page.isFull()) {
+				leftPage = loadOperatorPage(leftPageAddress);
+				leftTuple = nextOperatorTuple(left, leftPage, true);
+				while(leftTuple != null && !page.isFull()) {
+					while(rightPageAddress != -1 && !page.isFull()) {
+						rightPage = loadOperatorPage(rightPageAddress);
+						rightTuple = nextOperatorTuple(right, rightPage, true);
+						while(rightTuple != null && !page.isFull()) {
+							if((tuple = getComputedTuple(leftTuple, rightTuple)) != null) {
+								page.AddTuple(tuple);
+							}
+							rightTuple = nextOperatorTuple(right, rightPage, false);
 						}
-						if ((leftTuple = nextOperatorTuple(left, leftPage, false)) == null) {
-							leftPageAddress = releaseOperatorPage(left, leftPageAddress);
-							if (leftPageAddress == -1)
-								break;
-							leftPage = loadOperatorPage(leftPageAddress);
-							leftTuple = nextOperatorTuple(left, leftPage, true);
-						}
+						rightPageAddress = releaseOperatorPage(right, rightPageAddress);
 					}
-					rightPage = loadOperatorPage(rightPageAddress);
-					rightTuple = nextOperatorTuple(right, rightPage, true);
+					resetRightOperator();
+					leftTuple = nextOperatorTuple(left, leftPage, false);
 				}
-
-				if ((tuple = getComputedTuples(leftTuple, rightTuple)) == null)
-					continue;
-				
-				page.AddTuple(tuple);
+				leftPageAddress = releaseOperatorPage(left, leftPageAddress);
 			}
 
-			if (page.getNumberofTuple() == 0)
+			if(page.getNumberofTuple() == 0) {
+				mem.releasePage(page.getAddressPage(), false);
 				return -1;
-			
+			}
+
 			mem.PutinMemory(page, page.getAddressPage());
 			mem.releasePage(page.getAddressPage(), false);
-			
+
 			return page.getAddressPage();
 		} catch (NotEnoughMemoryException e) {
 			return -1;
@@ -171,6 +152,7 @@ public class JoinOperator implements PhysicalOperator {
 	}
 
 	private void resetRightOperator() {
+		rightTupleCount = 0;
 		right.reset();
 		rightPageAddress = right.nextPage();
 	}
@@ -181,7 +163,7 @@ public class JoinOperator implements PhysicalOperator {
 		return page;
 	}
 
-	private String[] getComputedTuples(String[] tuple1, String[] tuple2) {
+	protected String[] getComputedTuple(String[] tuple1, String[] tuple2) {
 		if (tuple1 == null || tuple2 == null)
 			return null;
 

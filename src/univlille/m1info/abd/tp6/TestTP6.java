@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -152,8 +153,6 @@ public class TestTP6 {
 			List<String[]> tupleArray = tp6.getOperatorTuples(testOperator);
 			// System.out.println("Number of reads : " + mem.getNumberOfDiskReadSinceLastReset());
 			// System.out.println("Number of writes : " + mem.getNumberofWriteDiskSinceLastReset());
-//			assertEquals(expectedTuples.size(), tupleArray.size());
-//			assertTrue(pageContentEquals(expectedTuples, tupleArray));
 			int pageNb;
 			while ((pageNb = testOperator.nextPage()) != -1) {
 				Page page = mem.loadPage(pageNb);
@@ -317,12 +316,8 @@ public class TestTP6 {
 		assertEquals(5, testNbPages);
 	}
 
-	// Remplacer FiltreSelection par la classe du TP6 - Section 6 Q1
-	// Sachant qu'ici le filtrage est une simple sélection
-
 	@Test
 	public void testSelection1() throws IOException, NotEnoughMemoryException {
-		// System.out.println("selection operator");
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		MemoryManager mem = new SimpleMemoryManager(100, 2);
 		DefaultRelation rel = new DefaultRelation(schema, mem);
@@ -362,7 +357,6 @@ public class TestTP6 {
 
 	@Test
 	public void testProjection1() throws IOException, NotEnoughMemoryException {
-		// System.out.println("projection operator");
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		MemoryManager mem = new SimpleMemoryManager(2, 2);
 		DefaultRelation rel = new DefaultRelation(schema, mem);
@@ -399,8 +393,6 @@ public class TestTP6 {
 		assertEquals(9, result.size());
 
 	}
-
-	// Remplacer JoinWithPages par la classe de TP6 - Section 7 Q2
 
 	@Test
 	public void testJoin() throws IOException, NotEnoughMemoryException {
@@ -474,8 +466,10 @@ public class TestTP6 {
 			System.out.println("new page");
 			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
-			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
 				result.add(tuple);
+				System.out.println(Arrays.toString(tuple));
+			}
 			mem.releasePage(pageNb, false);
 		}
 		assertEquals(resultArray.size(), result.size());
