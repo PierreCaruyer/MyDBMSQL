@@ -132,8 +132,6 @@ public class JoinOperator implements PhysicalOperator {
 				leftPageAddress = releaseOperatorPage(left, leftPageAddress);
 			}
 			
-			System.out.println(page.getNumberofTuple());
-
 			if(page.getNumberofTuple() == 0) {
 				mem.releasePage(page.getAddressPage(), false);
 				return -1;
@@ -148,12 +146,12 @@ public class JoinOperator implements PhysicalOperator {
 		}
 	}
 	
-	public int releaseAll(Page page) throws NotEnoughMemoryException{
+	private int releaseAll(Page page) throws NotEnoughMemoryException{
 		mem.PutinMemory(page, page.getAddressPage());
-		mem.releasePage(page.getAddressPage(), false);
 		mem.releasePage(leftPageAddress, false);
 		mem.releasePage(rightPageAddress, false);
-		return page.getAddressPage();
+		mem.releasePage(page.getAddressPage(), false);
+		return page.getAddressPage();	
 	}
 
 	private String[] nextOperatorTuple(PhysicalOperator op, Page page, boolean reset) {

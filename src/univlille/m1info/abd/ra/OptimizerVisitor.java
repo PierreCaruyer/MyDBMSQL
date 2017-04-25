@@ -24,7 +24,6 @@ public class OptimizerVisitor implements RAQueryVisitor {
 
 	@Override
 	public void visit(SelectionQuery q) {
-		// TODO Auto-generated method stub
 		System.out.println("* SEL");
 		System.out.println(q.toString());
 		
@@ -35,7 +34,6 @@ public class OptimizerVisitor implements RAQueryVisitor {
 
 	@Override
 	public void visit(ProjectionQuery q) {
-		// TODO Auto-generated method stub
 		System.out.println("* PROJ");
 		System.out.println(q.toString());
 		
@@ -58,7 +56,6 @@ public class OptimizerVisitor implements RAQueryVisitor {
 	
 	@Override
 	public void visit(JoinQuery q) {
-		// TODO Auto-generated method stub
 		System.out.println("* JOIN");
 		System.out.println(q.toString());
 		
@@ -79,18 +76,16 @@ public class OptimizerVisitor implements RAQueryVisitor {
 		addRoute(query);
 		leftQuery.accept(this);
 		rightQuery.accept(this);
-		
 	}
 
 	@Override
 	public void visit(RenameQuery q) {
-		// TODO Auto-generated method stub
 		System.out.println("RENA");
+		//q.getSubQuery().accept(this);
 	}
 
 	@Override
 	public void visit(RelationNameQuery q) {
-		// TODO Auto-generated method stub
 		System.out.println("REL");
 		if ( queue.size() == 0 ) {
 			addRoute(q);

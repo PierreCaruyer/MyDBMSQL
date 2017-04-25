@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -150,8 +151,8 @@ public class TestTP6 {
 			System.out.println("----------" + testName + "----------");
 		try {
 			List<String[]> tupleArray = tp6.getOperatorTuples(testOperator);
-			// System.out.println("Number of reads : " + mem.getNumberOfDiskReadSinceLastReset());
-			// System.out.println("Number of writes : " + mem.getNumberofWriteDiskSinceLastReset());
+			System.out.println("Number of reads : " + mem.getNumberOfDiskReadSinceLastReset());
+			System.out.println("Number of writes : " + mem.getNumberofWriteDiskSinceLastReset());
 			int pageNb;
 			while ((pageNb = testOperator.nextPage()) != -1) {
 				Page page = mem.loadPage(pageNb);
@@ -339,8 +340,8 @@ public class TestTP6 {
 			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) ;
 			mem.releasePage(pageNb, false);
 		}
-		// System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
-		// System.out.println("RESET");
+		System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
+		System.out.println("RESET");
 
 		List<String[]> result = new ArrayList<>();
 		sel.reset();
@@ -377,8 +378,8 @@ public class TestTP6 {
 			mem.releasePage(pageNb, false);
 		}
 
-		// System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
-		// System.out.println("RESET");
+		System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
+		System.out.println("RESET");
 
 		List<String[]> result = new ArrayList<>();
 		proj.reset();
@@ -456,7 +457,7 @@ public class TestTP6 {
 			mem.releasePage(pageNb, false);
 		}
 
-		// System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
+		System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
 		System.out.println("RESET");
 
 		List<String[]> result = new ArrayList<>();
@@ -464,14 +465,17 @@ public class TestTP6 {
 		pageNb = join.nextPage();
 		while (pageNb != -1) {
 			Page page = mem.loadPage(pageNb);
-			System.out.println("new page " + pageNb);
+			
 			page.switchToReadMode();
 			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
+				System.out.println(Arrays.toString(tuple));
 				result.add(tuple);
 			}
 			mem.releasePage(pageNb, false);
 			pageNb = join.nextPage();
 		}
+		for(String[] array : resultArray)
+			System.out.println(Arrays.toString(array));
 
 		assertEquals(resultArray.size(), result.size());
 		assertTrue(pageContentEquals(resultArray, result));
