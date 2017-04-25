@@ -97,17 +97,30 @@ public class JoinOperator implements PhysicalOperator {
 		try {
 			Page page = mem.NewPage(joinSorts.size()), leftPage = null, rightPage = null;
 			String[] leftTuple = null, rightTuple = null, tuple = null;
-
-			while(leftPageAddress != -1 && !page.isFull()) {
+			boolean catchUp = leftTupleCount > 0 || rightTupleCount > 0;
+			boolean rightPageLoaded = false;
+			
+			while(leftPageAddress != -1) {
 				leftPage = loadOperatorPage(leftPageAddress);
+				if(catchUp) {
+					rightPage = loadOperatorPage(rightPageAddress);
+					catchUpTuples(leftPage, rightPage);
+					catchUp = false;
+					rightPageLoaded = true;
+				}
 				leftTuple = nextOperatorTuple(left, leftPage, true);
-				while(leftTuple != null && !page.isFull()) {
-					while(rightPageAddress != -1 && !page.isFull()) {
-						rightPage = loadOperatorPage(rightPageAddress);
+				while(leftTuple != null) {
+					while(rightPageAddress != -1) {
+						if(rightPageLoaded)
+							rightPageLoaded = false;
+						else
+							rightPage = loadOperatorPage(rightPageAddress);
 						rightTuple = nextOperatorTuple(right, rightPage, true);
-						while(rightTuple != null && !page.isFull()) {
+						while(rightTuple != null) {
 							if((tuple = getComputedTuple(leftTuple, rightTuple)) != null) {
 								page.AddTuple(tuple);
+								if(page.isFull())
+									return releaseAll(page);
 							}
 							rightTuple = nextOperatorTuple(right, rightPage, false);
 						}
@@ -118,6 +131,8 @@ public class JoinOperator implements PhysicalOperator {
 				}
 				leftPageAddress = releaseOperatorPage(left, leftPageAddress);
 			}
+			
+			System.out.println(page.getNumberofTuple());
 
 			if(page.getNumberofTuple() == 0) {
 				mem.releasePage(page.getAddressPage(), false);
@@ -131,6 +146,14 @@ public class JoinOperator implements PhysicalOperator {
 		} catch (NotEnoughMemoryException e) {
 			return -1;
 		}
+	}
+	
+	public int releaseAll(Page page) throws NotEnoughMemoryException{
+		mem.PutinMemory(page, page.getAddressPage());
+		mem.releasePage(page.getAddressPage(), false);
+		mem.releasePage(leftPageAddress, false);
+		mem.releasePage(rightPageAddress, false);
+		return page.getAddressPage();
 	}
 
 	private String[] nextOperatorTuple(PhysicalOperator op, Page page, boolean reset) {
@@ -149,6 +172,13 @@ public class JoinOperator implements PhysicalOperator {
 	private int releaseOperatorPage(PhysicalOperator operator, int pageAddress) {
 		mem.releasePage(pageAddress, false);
 		return operator.nextPage();
+	}
+	
+	private void catchUpTuples(Page leftPage, Page rightPage) {
+		for(; leftTupleCount > 1; leftTupleCount--)
+			leftPage.nextTuple();
+		for(; rightTupleCount > 0; rightTupleCount--)
+			rightPage.nextTuple();
 	}
 
 	private void resetRightOperator() {

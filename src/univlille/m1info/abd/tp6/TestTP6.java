@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -458,20 +457,22 @@ public class TestTP6 {
 		}
 
 		// System.out.println("Number of operations : " + mem.getNumberOfDiskReadSinceLastReset());
-		// System.out.println("RESET");
+		System.out.println("RESET");
 
 		List<String[]> result = new ArrayList<>();
 		join.reset();
-		while ((pageNb = join.nextPage()) != -1) {
-			System.out.println("new page");
+		pageNb = join.nextPage();
+		while (pageNb != -1) {
 			Page page = mem.loadPage(pageNb);
+			System.out.println("new page " + pageNb);
 			page.switchToReadMode();
 			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
 				result.add(tuple);
-				System.out.println(Arrays.toString(tuple));
 			}
 			mem.releasePage(pageNb, false);
+			pageNb = join.nextPage();
 		}
+
 		assertEquals(resultArray.size(), result.size());
 		assertTrue(pageContentEquals(resultArray, result));
 	}
