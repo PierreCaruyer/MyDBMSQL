@@ -9,11 +9,11 @@ import univlille.m1info.abd.schema.RelationSchema;
 
 public class DefaultRelation {
 
-	private int firstPageAddress = -1;
-	private int lastPageAddress = -1;
-	private final RelationSchema schema;
-	private final MemoryManager mem;
-	private final int sortsCount;
+	protected int firstPageAddress = -1;
+	protected int lastPageAddress = -1;
+	protected final RelationSchema schema;
+	protected final MemoryManager mem;
+	protected final int sortsCount;
 
 	public DefaultRelation(RelationSchema schema, MemoryManager mem) {
 		this.mem = mem;
