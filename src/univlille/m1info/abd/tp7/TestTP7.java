@@ -40,7 +40,7 @@ public class TestTP7 {
 	private boolean moreThanOneAddress(Iterator<Integer> it) {
 		int count = 0;
 		for(;it.hasNext();) {
-			it.next();
+			System.out.println(it.next());
 			count++;
 		}
 		return count > 1;

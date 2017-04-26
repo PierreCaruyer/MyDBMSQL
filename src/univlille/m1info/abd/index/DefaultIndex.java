@@ -47,16 +47,16 @@ public class DefaultIndex implements Index{
 		try {
 			Page page = null;
 			boolean tupleMatch = false;
-			for(int address = rel.getFirstPageAddress(); address != rel.getLastPageAddress(); address = page.getAddressnextPage()) {
+			for(int address = rel.getFirstPageAddress(); address != -1; address = page.getAddressnextPage()) {
 				page = SchemawithMemory.mem.loadPage(address);
-				if(page == null)
-					continue;
+				page.switchToReadMode();
 				for(String[] pageTuple = page.nextTuple(); pageTuple != null && !tupleMatch; pageTuple = page.nextTuple()) {
 					if(tupleEquals(tuple, pageTuple)) {
 						addresses.add(address);
 						tupleMatch = true;
 					}
 				}
+				tupleMatch = false;
 				SchemawithMemory.mem.releasePage(address, false);
 			}
 			return addresses.iterator();
