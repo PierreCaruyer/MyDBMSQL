@@ -84,10 +84,8 @@ public class QueryEvaluator {
 			JoinQuery join = (JoinQuery)query;
 			SequentialAccessOnARelationOperator leftSequence, rightSequence;
 			RelationNameQuery rightRelationNameQuery = getRightSubQueryName(join), leftRelationNameQuery = getLeftSubQueryName(join);
-			DefaultRelation leftRelation = sgbd.getRelation(leftRelationNameQuery.getRelationName()), rightRelation = sgbd.getRelation(rightRelationNameQuery.getRelationName());
-			String[] leftSorts = leftRelation.getRelationSchema().getSort(), rightSorts = rightRelation.getRelationSchema().getSort();
-			Index leftIndex = 
-			
+			Index leftIndex = lookForIndex(rightRelationNameQuery.getRelationName());
+			Index rightIndex = lookForIndex(leftRelationNameQuery.getRelationName());
 			rightSequence = getSequentialAccessFromRelationName(sgbd, rightRelationNameQuery.getRelationName());
 			leftSequence = getSequentialAccessFromRelationName(sgbd, leftRelationNameQuery.getRelationName());
 
@@ -130,10 +128,8 @@ public class QueryEvaluator {
 	protected RelationNameQuery getRelationNameSubQuery(UnaryRAQuery query) {
 		RAQuery subQuery = query.getSubQuery();
 
-		if(subQuery instanceof RelationNameQuery){
-			relationName = ((RelationNameQuery)subQuery).getRelationName();
+		if(subQuery instanceof RelationNameQuery)
 			return (RelationNameQuery)subQuery;
-		}
 
 		return getRelationNameSubQuery((UnaryRAQuery)subQuery);
 	}

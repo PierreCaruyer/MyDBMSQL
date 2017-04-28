@@ -37,8 +37,9 @@ public class TestTP7 {
 		assertTrue(moreThanOneAddress(index.getListofAddresses(new String[] { "a5", "b1", "c3" })));
 	}
 
-	private boolean moreThanOneAddress(Iterator<Integer> it) {
+	private boolean moreThanOneAddress(List<Integer> list) {
 		int count = 0;
+		Iterator<Integer> it = list.iterator();
 		for(;it.hasNext();) {
 			System.out.println(it.next());
 			count++;

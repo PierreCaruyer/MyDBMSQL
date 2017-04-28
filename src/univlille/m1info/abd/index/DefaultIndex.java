@@ -1,40 +1,42 @@
 package univlille.m1info.abd.index;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import univlille.m1info.abd.memorydb.DefaultRelation;
 import univlille.m1info.abd.memorydb.SchemawithMemory;
-import univlille.m1info.abd.phys.NotEnoughMemoryException;
-import univlille.m1info.abd.phys.Page;
 
 public class DefaultIndex implements Index{
 
 	private String relName;
+	private String attribute;
 	private DefaultRelation rel;
 	private String[] sorts;
 	private int attributeRank = -1;
-	private List<Integer> addresses = null;
+	private Map<String, List<Integer>> index;
 
 	public DefaultIndex(String relName, String attribute, SchemawithMemory sgbd) {
 		this.relName = relName;
+		this.attribute = attribute;
 		this.rel = sgbd.getRelation(relName);
 		this.sorts = rel.getRelationSchema().getSort();
-		addresses = new ArrayList<>();
-
+		index = new Hashtable<>();
 		for(int i = 0; i < sorts.length && attributeRank < 0; i++)
 			if(sorts[i].equals(attribute))
 				attributeRank = i;
 	}
 
-	public void clear() {
-		addresses.clear();
-	}
-
 	@Override
 	public String getRelationName() {
 		return relName;
+	}
+	
+	@Override
+	public String getAttributeName() {
+		return attribute;
 	}
 
 	@Override
@@ -43,39 +45,24 @@ public class DefaultIndex implements Index{
 	}
 
 	@Override
-	public Iterator<Integer> getListofAddresses(String[] tuple) {
-		try {
-			Page page = null;
-			boolean tupleMatch = false;
-			for(int address = rel.getFirstPageAddress(); address != -1; address = page.getAddressnextPage()) {
-				page = SchemawithMemory.mem.loadPage(address);
-				page.switchToReadMode();
-				for(String[] pageTuple = page.nextTuple(); pageTuple != null && !tupleMatch; pageTuple = page.nextTuple()) {
-					if(tupleEquals(tuple, pageTuple)) {
-						addresses.add(address);
-						tupleMatch = true;
-					}
-				}
-				tupleMatch = false;
-				SchemawithMemory.mem.releasePage(address, false);
-			}
-			return addresses.iterator();
-		} catch(NotEnoughMemoryException e) {
-			clear();
-			return null;
+	public List<Integer> getListofAddresses(String[] tuple) {
+		return  index.get(Arrays.toString(tuple));
+	}
+	
+	@Override
+	public boolean addElement(String key, int address) {
+		if (index.containsKey(key)) {
+			return (index.get(key)).add(new Integer(address));
+		} else {
+			List <Integer> tmp= new ArrayList<>();
+			tmp.add(new Integer(address));
+			index.put(key, tmp);
+			return true;
 		}
 	}
 	
-	private boolean tupleEquals(String[] tuple1, String[] tuple2) {
-		boolean found = false;
-		for(int i = 0; i < tuple1.length; i++) {
-			found = false;
-			for(int j = 0; j < tuple2.length && !found; j++)
-				if(tuple1[i].equals(tuple2[j]))
-					found = true;
-			if(!found)
-				return false;
-		}
-		return true;
+	public void createIndex(int address){
+		
 	}
+	
 }
