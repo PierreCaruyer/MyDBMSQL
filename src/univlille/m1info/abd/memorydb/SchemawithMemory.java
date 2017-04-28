@@ -64,4 +64,8 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 		mem.resetDiskOperationsCount();
 		getRelation(relationName).loadTuples(tuples);
 	}
+	
+	public MemoryManager getMemoryManager(){
+		return mem;
+	}
 }
