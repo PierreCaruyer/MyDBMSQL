@@ -25,7 +25,6 @@ import univlille.m1info.abd.phys.SimpleMemoryManager;
 import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.DefaultRelationSchema;
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.testtuples.DisposalRelations;
 
 public class TestTP6 {
 
