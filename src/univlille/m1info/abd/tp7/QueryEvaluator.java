@@ -1,4 +1,4 @@
-package univlille.m1info.abd.tp6;
+package univlille.m1info.abd.tp7;
 
 import java.util.Arrays;
 
@@ -24,14 +24,14 @@ import univlille.m1info.abd.ra.UnaryRAQuery;
 
 public class QueryEvaluator {
 
-	protected MemoryManager evaluatorMemory;
 	protected SchemawithMemory sgbd;
+	protected MemoryManager memoryManager;
 	protected RAQuery query;
 
 	public QueryEvaluator(SchemawithMemory sgbd, RAQuery query) {
 		this.sgbd = sgbd;
 		this.query = query;
-		evaluatorMemory = sgbd.getMemoryManager();
+		this.memoryManager = SchemawithMemory.mem;
 	}
 
 	public void evaluate() {
@@ -40,11 +40,11 @@ public class QueryEvaluator {
 			int pageNb;
 			while ((pageNb = operator.nextPage()) != -1) {
 				Page page;
-				page = evaluatorMemory.loadPage(pageNb);
+				page = memoryManager.loadPage(pageNb);
 				page.switchToReadMode();
 				for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
 					System.out.println(Arrays.toString(tuple));
-				evaluatorMemory.releasePage(pageNb, false);
+				memoryManager.releasePage(pageNb, false);
 			}
 		} catch (NotEnoughMemoryException e) {
 			e.printStackTrace();
@@ -65,19 +65,19 @@ public class QueryEvaluator {
 				SequentialAccessOnARelationOperator sequence;
 
 				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
-				operator = new ProjectionOperator(sequence, evaluatorMemory, projection.getProjectedAttributesNames());
+				operator = new ProjectionOperator(sequence, memoryManager, projection.getProjectedAttributesNames());
 			} else if(query instanceof SelectionQuery) {
 				SelectionQuery selection = (SelectionQuery)query;
 				SequentialAccessOnARelationOperator sequence;
 
 				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
-				operator = new SelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator(), evaluatorMemory);
+				operator = new SelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator(), memoryManager);
 			} else if(query instanceof RenameQuery) {
 				RenameQuery rename = (RenameQuery)query;
 				SequentialAccessOnARelationOperator sequence;
 
 				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
-				operator = new RenameOperator(sequence, rename.getOldAttrName(), rename.getNewAttrName(), evaluatorMemory);
+				operator = new RenameOperator(sequence, rename.getOldAttrName(), rename.getNewAttrName(), memoryManager);
 			}
 		}
 		else {
@@ -89,7 +89,7 @@ public class QueryEvaluator {
 			rightSequence = getSequentialAccessFromRelationName(sgbd, rightRelationNameQuery.getRelationName());
 			leftSequence = getSequentialAccessFromRelationName(sgbd, leftRelationNameQuery.getRelationName());
 
-			operator = new JoinOperator(rightSequence, leftSequence, evaluatorMemory);
+			operator = new JoinOperator(rightSequence, leftSequence, SchemawithMemory.mem);
 		}
 		return operator;
 	}
@@ -120,7 +120,7 @@ public class QueryEvaluator {
 		SequentialAccessOnARelationOperator sequentialOperator;
 
 		relation = sgbd.getRelation(relName);
-		sequentialOperator = new SequentialAccessOnARelationOperator(relation, sgbd.getMemoryManager());
+		sequentialOperator = new SequentialAccessOnARelationOperator(relation, SchemawithMemory.mem);
 
 		return sequentialOperator;
 	}
