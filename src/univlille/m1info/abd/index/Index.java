@@ -1,6 +1,6 @@
 package univlille.m1info.abd.index;
 
-import java.util.Iterator;
+import java.util.List;
 
 public interface Index {
 
@@ -8,8 +8,11 @@ public interface Index {
 	public String getRelationName ();
 	// Get the rank related to the attribute
 	public int getRankofAttribute ();
+	//
+	public String getAttributeName ();
 	// Get an iterator of the addresses for a tuple of values
-	public Iterator<Integer> getListofAddresses (String[] tuple);
-	
+	public List<Integer> getListofAddresses (String[] tuple);
+	// Add an address for the key 
+	public boolean addElement(String key,int Address);
 	
 }

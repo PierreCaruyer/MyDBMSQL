@@ -30,7 +30,7 @@ public class TestTP6 {
 
 	public static final int PAGE_SIZE = 20;
 	public static final int ATTRIBUTE_SIZE = 20;
-	private static final int REPEAT = 15;
+	public static final int REPEAT = 15;
 	private MemoryManager mem;
 	private TP6 tp6;
 
