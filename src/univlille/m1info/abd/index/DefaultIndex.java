@@ -8,25 +8,31 @@ import java.util.Map;
 
 import univlille.m1info.abd.memorydb.DefaultRelation;
 import univlille.m1info.abd.memorydb.SchemawithMemory;
+import univlille.m1info.abd.phys.NotEnoughMemoryException;
+import univlille.m1info.abd.phys.Page;
 
 public class DefaultIndex implements Index{
 
-	private String relName;
-	private String attribute;
-	private DefaultRelation rel;
-	private String[] sorts;
-	private int attributeRank = -1;
-	private Map<String, List<Integer>> index;
+	protected String relName;
+	protected String attribute;
+	protected DefaultRelation rel;
+	protected String[] sorts;
+	protected int attributeRank = -1;
+	protected SchemawithMemory sgbd;
+	protected Map<String, List<Integer>> index;
 
 	public DefaultIndex(String relName, String attribute, SchemawithMemory sgbd) {
+		this.sgbd = sgbd;
 		this.relName = relName;
 		this.attribute = attribute;
 		this.rel = sgbd.getRelation(relName);
 		this.sorts = rel.getRelationSchema().getSort();
-		index = new Hashtable<>();
+		
 		for(int i = 0; i < sorts.length && attributeRank < 0; i++)
 			if(sorts[i].equals(attribute))
 				attributeRank = i;
+		
+		index = new Hashtable<>();
 	}
 
 	@Override
@@ -62,7 +68,24 @@ public class DefaultIndex implements Index{
 	}
 	
 	public void createIndex(int address){
-		
+		try{
+			Page page = SchemawithMemory.mem.loadPage(address);
+			
+			for(String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
+				List<Integer> indexedTuples = getListofAddresses(tuple);
+				if(indexedTuples == null)
+					indexedTuples = new ArrayList<>();
+				indexedTuples.add(address);
+				addElement(Arrays.toString(tuple), address);
+			}
+			
+			SchemawithMemory.mem.releasePage(address, false);
+		} catch(NotEnoughMemoryException e) {
+			e.printStackTrace();
+		}
 	}
 	
+	public SchemawithMemory getSgbd() {
+		return sgbd;
+	}
 }
