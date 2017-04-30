@@ -5,17 +5,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
 
+import univlille.m1info.abd.memorydb.DefaultRelation;
+import univlille.m1info.abd.memorydb.SchemawithMemory;
 import univlille.m1info.abd.schema.RelationSchema;
-import univlille.m1info.abd.simplebd.SimpleDBRelation;
-import univlille.m1info.abd.simplebd.SimpleSGBD;
 import univlille.m1info.abd.tp4.QueryFactory;
 
-public class OptimizerVisitor implements RAQueryVisitor {
-	private SimpleSGBD sgbd;
+public class OptimizerVisitorWithMemory implements RAQueryVisitor {
+	private SchemawithMemory sgbd;
 	private ArrayList<SelectionQuery> queue;
 	private ArrayDeque<RAQuery> routes;
 
-	public OptimizerVisitor(SimpleSGBD sgbd) {
+	public OptimizerVisitorWithMemory(SchemawithMemory sgbd) {
 		super();
 		this.sgbd = sgbd;
 		queue = new ArrayList<SelectionQuery>();
@@ -91,7 +91,7 @@ public class OptimizerVisitor implements RAQueryVisitor {
 			addRoute(q);
 		}
 		else { 
-			SimpleDBRelation relation = sgbd.getRelation(q.getRelationName());
+			DefaultRelation relation = sgbd.getRelation(q.getRelationName());
 			RelationSchema schema = relation.getRelationSchema();
 			String[] sorts = schema.getSort();
 			

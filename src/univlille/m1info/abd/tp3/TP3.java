@@ -1,8 +1,24 @@
 package univlille.m1info.abd.tp3;
 
+import univlille.m1info.abd.phys.old.SequentialAccessOnARelationOperator;
+import univlille.m1info.abd.phys.old.JoinOperator;
+import univlille.m1info.abd.phys.old.PhysicalOperator;
+import univlille.m1info.abd.phys.old.ProjectionOperator;
+import univlille.m1info.abd.phys.old.RenameOperator;
+import univlille.m1info.abd.phys.old.SelectionOperator;
+import univlille.m1info.abd.ra.JoinQuery;
+import univlille.m1info.abd.ra.ProjectionQuery;
+import univlille.m1info.abd.ra.RAQuery;
+import univlille.m1info.abd.ra.RelationNameQuery;
+import univlille.m1info.abd.ra.RenameQuery;
+import univlille.m1info.abd.ra.SelectionQuery;
+import univlille.m1info.abd.ra.UnaryRAQuery;
+import univlille.m1info.abd.simplebd.SimpleDBRelation;
+import univlille.m1info.abd.simplebd.SimpleSGBD;
+
 public class TP3 {
 	/** Creates an operator that allows to (efficiently) execute the given operation on the given database. */
-	/*public PhysicalOperator getOperator(RAQuery query, SimpleSGBD sgbd) {
+	public PhysicalOperator getOperator(RAQuery query, SimpleSGBD sgbd) {
 		PhysicalOperator operator;
 		if(!(query instanceof ProjectionQuery) && !(query instanceof SelectionQuery) && !(query instanceof JoinQuery) && !(query instanceof RenameQuery)) {
 			throw new UnsupportedOperationException("Unrecognized query type : " + query.getClass().getName());
@@ -86,5 +102,5 @@ public class TP3 {
 			return (RelationNameQuery)subQuery;
 		
 		return getRelationNameSubQuery((UnaryRAQuery)subQuery);
-	}*/
+	}
 }

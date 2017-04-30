@@ -1,5 +1,6 @@
 package univlille.m1info.abd.phys;
 
+import univlille.m1info.abd.index.Index;
 import univlille.m1info.abd.memorydb.DefaultRelation;
 import univlille.m1info.abd.schema.RelationSchema;
 
@@ -10,6 +11,7 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator {
 	protected final MemoryManager mem;
 	protected int pageAddress;
 	protected boolean pageInitialized;
+	protected Index index;
 
 	public SequentialAccessOnARelationOperator(DefaultRelation relation, MemoryManager mem) {
 		this.relation = relation;
@@ -21,6 +23,8 @@ public class SequentialAccessOnARelationOperator implements PhysicalOperator {
 
 	@Override
 	public String[] nextTuple() {
+		if(pageAddress == -1)
+			return null;
 		try {
 			Page page = mem.loadPage(pageAddress);
 			if (page == null)

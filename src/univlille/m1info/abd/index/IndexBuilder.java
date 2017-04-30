@@ -1,3 +1,4 @@
+
 package univlille.m1info.abd.index;
 
 import univlille.m1info.abd.memorydb.DefaultRelation;
@@ -24,9 +25,5 @@ public class IndexBuilder {
 		} catch (NotEnoughMemoryException e) {
 			return null;
 		}
-	}
-	
-	public static UpdatableIndex buildTemporaryIndex(DefaultIndex index) {
-		return new UpdatableIndex(index.getRelationName(), index.getAttributeName(), index.getSgbd());
 	}
 }

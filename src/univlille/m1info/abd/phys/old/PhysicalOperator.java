@@ -1,4 +1,4 @@
-package univlille.m1info.abd.phys;
+package univlille.m1info.abd.phys.old;
 
 import univlille.m1info.abd.schema.RelationSchema;
 
@@ -26,13 +26,4 @@ public interface PhysicalOperator {
 	 * A subsequent call of {@link #nextTuple()} will return the first tuple of the result. 
 	 */
 	public void reset();
-	
-	
-	/**
-	 * We do want to access directly to the tuples by through the pages where they are stored.
-	 * The pages are managed trough the Memory Manager
-	 * 
-	 * @return
-	 */
-	public int nextPage();
 }

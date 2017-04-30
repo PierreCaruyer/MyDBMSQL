@@ -15,6 +15,7 @@ import univlille.m1info.abd.phys.RenameOperator;
 import univlille.m1info.abd.phys.SelectionOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
 import univlille.m1info.abd.ra.JoinQuery;
+import univlille.m1info.abd.ra.OptimizerVisitorWithMemory;
 import univlille.m1info.abd.ra.ProjectionQuery;
 import univlille.m1info.abd.ra.RAQuery;
 import univlille.m1info.abd.ra.RelationNameQuery;
@@ -53,27 +54,31 @@ public class QueryEvaluator {
 
 	/** Creates an operator that allows to (efficiently) execute the given operation on the given database. */
 	protected PhysicalOperator getOperator(RAQuery query) {
+		OptimizerVisitorWithMemory visitor = new OptimizerVisitorWithMemory(sgbd);
+		query.accept(visitor);
+		RAQuery optimQuery = visitor.topQuery();
+		
 		PhysicalOperator operator = null;
-		if(!(query instanceof UnaryRAQuery) && !(query instanceof JoinQuery)) {
-			throw new UnsupportedOperationException("Unrecognized query type : " + query.getClass().getName());
-		} else	if(query instanceof UnaryRAQuery) {
-			RelationNameQuery relationNameQuery = getRelationNameSubQuery((UnaryRAQuery)query);
+		if(!(optimQuery instanceof UnaryRAQuery) && !(optimQuery instanceof JoinQuery)) {
+			throw new UnsupportedOperationException("Unrecognized optimQuery type : " + optimQuery.getClass().getName());
+		} else	if(optimQuery instanceof UnaryRAQuery) {
+			RelationNameQuery relationNameQuery = getRelationNameSubQuery((UnaryRAQuery)optimQuery);
 			String relationName = relationNameQuery.getRelationName();
 			Index relationIndex = lookForIndex(relationName);
-			if(query instanceof ProjectionQuery) {
-				ProjectionQuery projection = (ProjectionQuery)query;
+			if(optimQuery instanceof ProjectionQuery) {
+				ProjectionQuery projection = (ProjectionQuery)optimQuery;
 				SequentialAccessOnARelationOperator sequence;
 
 				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
 				operator = new ProjectionOperator(sequence, memoryManager, projection.getProjectedAttributesNames());
-			} else if(query instanceof SelectionQuery) {
-				SelectionQuery selection = (SelectionQuery)query;
+			} else if(optimQuery instanceof SelectionQuery) {
+				SelectionQuery selection = (SelectionQuery)optimQuery;
 				SequentialAccessOnARelationOperator sequence;
 
 				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
 				operator = new SelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator(), memoryManager);
-			} else if(query instanceof RenameQuery) {
-				RenameQuery rename = (RenameQuery)query;
+			} else if(optimQuery instanceof RenameQuery) {
+				RenameQuery rename = (RenameQuery)optimQuery;
 				SequentialAccessOnARelationOperator sequence;
 
 				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
@@ -81,7 +86,7 @@ public class QueryEvaluator {
 			}
 		}
 		else {
-			JoinQuery join = (JoinQuery)query;
+			JoinQuery join = (JoinQuery)optimQuery;
 			SequentialAccessOnARelationOperator leftSequence, rightSequence;
 			RelationNameQuery rightRelationNameQuery = getRightSubQueryName(join), leftRelationNameQuery = getLeftSubQueryName(join);
 			Index leftIndex = lookForIndex(rightRelationNameQuery.getRelationName());
@@ -94,12 +99,12 @@ public class QueryEvaluator {
 		return operator;
 	}
 
-	protected RelationNameQuery getLeftSubQueryName(JoinQuery query) {
-		return getJoinSubQueryName(query, true);
+	protected RelationNameQuery getLeftSubQueryName(JoinQuery optimQuery) {
+		return getJoinSubQueryName(optimQuery, true);
 	}
 
-	protected RelationNameQuery getRightSubQueryName(JoinQuery query) {
-		return getJoinSubQueryName(query, false);
+	protected RelationNameQuery getRightSubQueryName(JoinQuery optimQuery) {
+		return getJoinSubQueryName(optimQuery, false);
 	}
 
 	protected RelationNameQuery getJoinSubQueryName(JoinQuery query, boolean left) {

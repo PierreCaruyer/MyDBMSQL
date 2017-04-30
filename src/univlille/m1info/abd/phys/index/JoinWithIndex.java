@@ -3,18 +3,17 @@ package univlille.m1info.abd.phys.index;
 import univlille.m1info.abd.index.DefaultIndex;
 import univlille.m1info.abd.index.Index;
 import univlille.m1info.abd.memorydb.SchemawithMemory;
+import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.PhysicalOperator;
-import univlille.m1info.abd.phys.SelectionOperator;
-import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 
-public class SelectionWithIndex extends SelectionOperator implements IndexOperator{
+public class JoinWithIndex extends JoinOperator implements IndexOperator{
+
+	public JoinWithIndex(PhysicalOperator right, PhysicalOperator left, SchemawithMemory sgbd) {
+		super(right, left, SchemawithMemory.mem);
+	}
 
 	protected DefaultIndex index;
-	
-	public SelectionWithIndex(PhysicalOperator operator, String attrName, String value, ComparisonOperator comparator, SchemawithMemory sgbd) {
-		super(operator, attrName, value, comparator, SchemawithMemory.mem);
-	}
 
 	@Override
 	public String[] nextTuple() {
