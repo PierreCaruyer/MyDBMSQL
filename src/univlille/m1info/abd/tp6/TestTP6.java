@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import univlille.m1info.abd.memorydb.DefaultRelation;
+import univlille.m1info.abd.memorydb.SchemawithMemory;
 import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.NotEnoughMemoryException;
@@ -27,18 +28,18 @@ import univlille.m1info.abd.schema.RelationSchema;
 
 public class TestTP6 {
 
-	public static final int PAGE_SIZE = 20;
-	public static final int ATTRIBUTE_SIZE = 20;
 	public static final int REPEAT = 15;
+	private SchemawithMemory sgbd;
 	private DisposalRelations relationsAtDisposal;
 	private MemoryManager mem;
 	private TP6 tp6;
 
 	@Before
 	public void setUp() {
-		tp6 = new TP6(PAGE_SIZE, ATTRIBUTE_SIZE);
+		tp6 = new TP6();
+		sgbd = tp6.getSgbd();
 		mem = tp6.getMemoryManager();
-		relationsAtDisposal = new DisposalRelations(mem);
+		relationsAtDisposal = new DisposalRelations(tp6.getSgbd());
 	}
 
 	private void synthesizeTest(String testName, PhysicalOperator testOperator, List<String[]> expectedTuples, boolean finalTest) {
@@ -186,7 +187,7 @@ public class TestTP6 {
 	public void testParcoursTable() throws IOException, NotEnoughMemoryException {
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		MemoryManager mem = new SimpleMemoryManager(2, 2);
-		DefaultRelation rel = new DefaultRelation(schema, mem);
+		DefaultRelation rel = new DefaultRelation(schema, sgbd);
 
 		ArrayList<String[]> tuples = new ArrayList<>();
 		for (int i = 1; i <= 9; i++) {
@@ -215,7 +216,7 @@ public class TestTP6 {
 	public void testSelection1() throws IOException, NotEnoughMemoryException {
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		MemoryManager mem = new SimpleMemoryManager(100, 2);
-		DefaultRelation rel = new DefaultRelation(schema, mem);
+		DefaultRelation rel = new DefaultRelation(schema, sgbd);
 
 		ArrayList<String[]> tuples = new ArrayList<>();
 		for (int i = 1; i <= 9; i++) {
@@ -254,7 +255,7 @@ public class TestTP6 {
 	public void testProjection1() throws IOException, NotEnoughMemoryException {
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		MemoryManager mem = new SimpleMemoryManager(2, 2);
-		DefaultRelation rel = new DefaultRelation(schema, mem);
+		DefaultRelation rel = new DefaultRelation(schema, sgbd);
 
 		ArrayList<String[]> tuples = new ArrayList<>();
 		for (int i = 1; i <= 9; i++)
@@ -300,14 +301,14 @@ public class TestTP6 {
 		for (int i = 1; i <= 9; i++)
 			tuples1.add(new String[] { "a" + (i % 3), "b" + i });
 
-		DefaultRelation rel1 = new DefaultRelation(schema1, mem);
+		DefaultRelation rel1 = new DefaultRelation(schema1, sgbd);
 		rel1.loadTuples(tuples1);
 
 		List<String[]> tuples2 = new ArrayList<>();
 		for (int i = 1; i <= 9; i++)
 			tuples2.add(new String[] { "a" + (i % 3), "c" + i });
 
-		DefaultRelation rel2 = new DefaultRelation(schema2, mem);
+		DefaultRelation rel2 = new DefaultRelation(schema2, sgbd);
 		rel2.loadTuples(tuples2);
 
 		SequentialAccessOnARelationOperator tableOpLeft = new SequentialAccessOnARelationOperator(rel1, mem);

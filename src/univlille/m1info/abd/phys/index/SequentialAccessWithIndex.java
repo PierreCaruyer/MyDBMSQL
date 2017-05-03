@@ -66,7 +66,7 @@ public class SequentialAccessWithIndex extends SequentialAccessOnARelationOperat
 						page.AddTuple(relationTuple);
 						tableAddresses.add(new Integer(pageAddress));
 						if(page.isFull()) {
-							index.updateIndex(Arrays.toString(relationTuple), tableAddresses);
+							index.updateKeyValues(Arrays.toString(relationTuple), tableAddresses);
 							break;
 						}
 					}

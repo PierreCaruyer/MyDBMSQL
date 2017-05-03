@@ -4,12 +4,13 @@ import univlille.m1info.abd.index.DefaultIndex;
 import univlille.m1info.abd.index.Index;
 import univlille.m1info.abd.memorydb.SchemawithMemory;
 import univlille.m1info.abd.phys.JoinOperator;
-import univlille.m1info.abd.phys.PhysicalOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 
 public class JoinWithIndex extends JoinOperator implements IndexOperator{
 
-	public JoinWithIndex(PhysicalOperator right, PhysicalOperator left, SchemawithMemory sgbd) {
+	
+	
+	public JoinWithIndex(IndexOperator right, IndexOperator left, SchemawithMemory sgbd) {
 		super(right, left, SchemawithMemory.mem);
 	}
 

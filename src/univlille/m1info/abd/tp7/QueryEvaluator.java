@@ -64,24 +64,24 @@ public class QueryEvaluator {
 		} else	if(optimQuery instanceof UnaryRAQuery) {
 			RelationNameQuery relationNameQuery = getRelationNameSubQuery((UnaryRAQuery)optimQuery);
 			String relationName = relationNameQuery.getRelationName();
-			Index relationIndex = lookForIndex(relationName);
+//			Index relationIndex = lookForIndex(relationName);
 			if(optimQuery instanceof ProjectionQuery) {
 				ProjectionQuery projection = (ProjectionQuery)optimQuery;
 				SequentialAccessOnARelationOperator sequence;
 
-				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
+				sequence = getSequentialAccessFromRelationName(sgbd, relationName);
 				operator = new ProjectionOperator(sequence, memoryManager, projection.getProjectedAttributesNames());
 			} else if(optimQuery instanceof SelectionQuery) {
 				SelectionQuery selection = (SelectionQuery)optimQuery;
 				SequentialAccessOnARelationOperator sequence;
 
-				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
+				sequence = getSequentialAccessFromRelationName(sgbd, relationName);
 				operator = new SelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator(), memoryManager);
 			} else if(optimQuery instanceof RenameQuery) {
 				RenameQuery rename = (RenameQuery)optimQuery;
 				SequentialAccessOnARelationOperator sequence;
 
-				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
+				sequence = getSequentialAccessFromRelationName(sgbd, relationName);
 				operator = new RenameOperator(sequence, rename.getOldAttrName(), rename.getNewAttrName(), memoryManager);
 			}
 		}
@@ -89,8 +89,8 @@ public class QueryEvaluator {
 			JoinQuery join = (JoinQuery)optimQuery;
 			SequentialAccessOnARelationOperator leftSequence, rightSequence;
 			RelationNameQuery rightRelationNameQuery = getRightSubQueryName(join), leftRelationNameQuery = getLeftSubQueryName(join);
-			Index leftIndex = lookForIndex(rightRelationNameQuery.getRelationName());
-			Index rightIndex = lookForIndex(leftRelationNameQuery.getRelationName());
+//			Index leftIndex = lookForIndex(rightRelationNameQuery.getRelationName());
+//			Index rightIndex = lookForIndex(leftRelationNameQuery.getRelationName());
 			rightSequence = getSequentialAccessFromRelationName(sgbd, rightRelationNameQuery.getRelationName());
 			leftSequence = getSequentialAccessFromRelationName(sgbd, leftRelationNameQuery.getRelationName());
 
@@ -108,9 +108,7 @@ public class QueryEvaluator {
 	}
 
 	protected RelationNameQuery getJoinSubQueryName(JoinQuery query, boolean left) {
-		RAQuery subQuery;
-
-		subQuery = (left)? query.getLeftSubQuery() : query.getRightSubQuery();
+		RAQuery subQuery = (left)? query.getLeftSubQuery() : query.getRightSubQuery();
 
 		if(subQuery instanceof RelationNameQuery)
 			return (RelationNameQuery)subQuery;

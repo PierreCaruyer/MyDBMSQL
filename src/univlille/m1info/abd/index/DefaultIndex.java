@@ -58,6 +58,8 @@ public class DefaultIndex implements Index{
 	@Override
 	public boolean addElement(String key, int address) {
 		if (index.containsKey(key)) {
+			if(index.get(key).contains(new Integer(address)))
+				return false;
 			return (index.get(key)).add(new Integer(address));
 		} else {
 			List <Integer> tmp= new ArrayList<>();
@@ -67,27 +69,21 @@ public class DefaultIndex implements Index{
 		}
 	}
 	
-	public void createIndex(int address){
+	public void createIndex(int address) {
 		try{
 			Page page = SchemawithMemory.mem.loadPage(address);
-			
-			for(String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
-				List<Integer> indexedTuples = getListofAddresses(tuple);
-				if(indexedTuples == null)
-					indexedTuples = new ArrayList<>();
-				indexedTuples.add(address);
+			page.switchToReadMode();
+			for(String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
 				addElement(Arrays.toString(tuple), address);
-			}
-			
 			SchemawithMemory.mem.releasePage(address, false);
 		} catch(NotEnoughMemoryException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void updateIndex(String key, List<Integer> updatedValues) {
-		index.remove(key);
-		index.put(key, updatedValues);
+	public void updateKeyValues(String key, List<Integer> values) {
+		for(Integer val : values)
+			addElement(key, val);
 	}
 	
 	public SchemawithMemory getSgbd() {

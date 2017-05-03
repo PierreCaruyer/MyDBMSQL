@@ -23,7 +23,7 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 	 */
 	@Override
 	protected DefaultRelation newRelation(RelationSchema schema) {
-		return new DefaultRelation(schema, mem);
+		return new DefaultRelation(schema, this);
 	}
 
 	/**
@@ -35,7 +35,10 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 	 * @return the index related to the relation and the attributes
 	 */
 	public Index getIndex(String nameRelation, String attribute) {
-		return indexMap.get(nameRelation).get(attribute);
+		Map<String, Index> relationIndexes = indexMap.get(nameRelation);
+		if(relationIndexes == null)
+			return null;
+		return relationIndexes.get(attribute);
 	}
 
 	/**
@@ -47,7 +50,7 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 	 */
 	public void addIndex(String nameRelation, String attribute, Index index) {
 		Map<String, Index> map = indexMap.get(nameRelation);
-		if(map == null)
+		if(map == null) 
 			map = new HashMap<>();
 		map.put(attribute, index);
 		indexMap.put(nameRelation, map);
@@ -63,6 +66,15 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 	public void FillRelation(String relationName, List<String[]> tuples) {
 		mem.resetDiskOperationsCount();
 		getRelation(relationName).loadTuples(tuples);
+	}
+	
+	public Index getUniqueIndex(RelationSchema schema) {
+		String[] attributes = schema.getSort();
+		Index index = null;
+		for(String attr : attributes)
+			if((index = getIndex(schema.getName(), attr)) != null)
+				return index;
+		return null;
 	}
 	
 	public MemoryManager getMemoryManager(){

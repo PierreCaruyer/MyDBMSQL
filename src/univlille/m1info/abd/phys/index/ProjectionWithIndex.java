@@ -3,7 +3,6 @@ package univlille.m1info.abd.phys.index;
 import univlille.m1info.abd.index.DefaultIndex;
 import univlille.m1info.abd.index.Index;
 import univlille.m1info.abd.memorydb.SchemawithMemory;
-import univlille.m1info.abd.phys.PhysicalOperator;
 import univlille.m1info.abd.phys.ProjectionOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 
@@ -11,7 +10,7 @@ public class ProjectionWithIndex extends ProjectionOperator implements IndexOper
 
 	protected DefaultIndex index;
 	
-	public ProjectionWithIndex(PhysicalOperator operator, SchemawithMemory sgbd, String ... atributes) {
+	public ProjectionWithIndex(IndexOperator operator, SchemawithMemory sgbd, String ... atributes) {
 		super(operator, SchemawithMemory.mem, atributes);
 	}
 

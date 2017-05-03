@@ -174,7 +174,7 @@ public class TP2 {
 		
 		outputRelation.switchToReadMode();
 		
-		//sgbd.addRelation(outputRelationName, outputRelation);
+		sgbd.addRelation(outputRelationName, outputRelation);
 		
 		return outputRelationName;
 	}

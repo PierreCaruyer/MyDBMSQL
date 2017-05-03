@@ -14,8 +14,8 @@ Auteurs :
 
 	-implémentation des opérateurs en utilisant la mémoire
 	-implémentation de loadTuples dans DefaultRelation
-	-présence d'un évaluateur de requête dans le package tp6
 
 -TP7 : implémenté (avec tests)
 
 	-implémentation d'index
+	-présence d'un évaluateur de requête dans le package tp7

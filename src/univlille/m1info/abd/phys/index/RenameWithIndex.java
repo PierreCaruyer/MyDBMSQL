@@ -3,7 +3,6 @@ package univlille.m1info.abd.phys.index;
 import univlille.m1info.abd.index.DefaultIndex;
 import univlille.m1info.abd.index.Index;
 import univlille.m1info.abd.memorydb.SchemawithMemory;
-import univlille.m1info.abd.phys.PhysicalOperator;
 import univlille.m1info.abd.phys.RenameOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 
@@ -11,7 +10,7 @@ public class RenameWithIndex extends RenameOperator implements IndexOperator{
 
 	protected DefaultIndex index;
 	
-	public RenameWithIndex(PhysicalOperator operator, String attrName, String renamedAttribute, SchemawithMemory sgbd) {
+	public RenameWithIndex(IndexOperator operator, String attrName, String renamedAttribute, SchemawithMemory sgbd) {
 		super(operator, attrName, renamedAttribute, SchemawithMemory.mem);
 	}
 
