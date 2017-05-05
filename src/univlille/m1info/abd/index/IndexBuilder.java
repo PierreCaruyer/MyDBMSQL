@@ -1,26 +1,28 @@
 
 package univlille.m1info.abd.index;
 
-//Deprecated
+import univlille.m1info.abd.memorydb.DefaultRelation;
+import univlille.m1info.abd.memorydb.SchemawithMemory;
+import univlille.m1info.abd.phys.NotEnoughMemoryException;
+import univlille.m1info.abd.phys.Page;
+
 public class IndexBuilder {
-/*
-	public static DefaultIndex build(String relation, String attribute, SchemawithMemory sgbd) {
+
+	public static Index build(String relation, String attribute, SchemawithMemory sgbd) {
 		try {
 			DefaultIndex index = new DefaultIndex(relation, attribute, sgbd);
 			DefaultRelation rel = sgbd.getRelation(relation);
-			int address = rel.getFirstPageAddress();
 			
-			do {
-				System.out.println(address);
-				index.createIndex(address);
-				Page page = SchemawithMemory.mem.loadPage(address);
-				address = page.getAddressnextPage();
+			for(int address = rel.getFirstPageAddress(); address != -1; ) {
+				Page currentPage = SchemawithMemory.mem.loadPage(address);
+				int nextPageAddress = currentPage.getAddressnextPage();
 				SchemawithMemory.mem.releasePage(address, false);
-			} while (address != -1);
+				address = nextPageAddress;
+			}
 
 			return index;
 		} catch (NotEnoughMemoryException e) {
 			return null;
 		}
-	}*/
+	}
 }

@@ -1,9 +1,7 @@
 package univlille.m1info.abd.memorydb;
 
-import java.util.Arrays;
 import java.util.List;
 
-import univlille.m1info.abd.index.Index;
 import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.NotEnoughMemoryException;
 import univlille.m1info.abd.phys.Page;
@@ -51,7 +49,6 @@ public class DefaultRelation {
 		if (tuples.isEmpty())
 			return;
 		try {
-			Index relationIndex = sgbd.getUniqueIndex(schema);
 			Page currentPage = mem.NewPage(sortsCount), lastPage = null;
 
 			currentPage.SetPrevAdd(-1);
@@ -59,8 +56,6 @@ public class DefaultRelation {
 
 			for (int i = 0; i < tuples.size(); i++) {
 				currentPage.AddTuple(tuples.get(i));
-				if(relationIndex != null)
-					relationIndex.addElement(Arrays.toString(tuples.get(i)), currentPage.getAddressPage());
 				if (currentPage.isFull() && i != tuples.size() - 1) {
 					lastPage = currentPage;
 
