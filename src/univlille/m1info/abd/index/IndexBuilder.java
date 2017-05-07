@@ -12,13 +12,14 @@ public class IndexBuilder {
 		try {
 			DefaultIndex index = new DefaultIndex(relation, attribute, sgbd);
 			DefaultRelation rel = sgbd.getRelation(relation);
-			
-			for(int address = rel.getFirstPageAddress(); address != -1; ) {
-				Page currentPage = SchemawithMemory.mem.loadPage(address);
-				int nextPageAddress = currentPage.getAddressnextPage();
-				SchemawithMemory.mem.releasePage(address, false);
-				address = nextPageAddress;
-			}
+			int address = rel.getFirstPageAddress();
+			Page page = sgbd.getMemoryManager().loadPage(address);
+			do {
+				index.createIndex(address);
+				sgbd.getMemoryManager().releasePage(address, false);
+				if((address = page.getAddressnextPage()) != -1)
+					page = sgbd.getMemoryManager().loadPage(address);
+			} while (address != -1);
 
 			return index;
 		} catch (NotEnoughMemoryException e) {

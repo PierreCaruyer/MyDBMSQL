@@ -12,7 +12,7 @@ public class SelectionWithIndex extends SelectionOperator implements IndexOperat
 	protected DefaultIndex index;
 	
 	public SelectionWithIndex(IndexOperator operator, String attrName, String value, ComparisonOperator comparator, SchemawithMemory sgbd) {
-		super(operator, attrName, value, comparator, SchemawithMemory.mem);
+		super(operator, attrName, value, comparator, sgbd.getMemoryManager());
 	}
 
 	@Override

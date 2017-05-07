@@ -11,7 +11,7 @@ public class RenameWithIndex extends RenameOperator implements IndexOperator{
 	protected DefaultIndex index;
 	
 	public RenameWithIndex(IndexOperator operator, String attrName, String renamedAttribute, SchemawithMemory sgbd) {
-		super(operator, attrName, renamedAttribute, SchemawithMemory.mem);
+		super(operator, attrName, renamedAttribute, sgbd.getMemoryManager());
 	}
 
 	@Override

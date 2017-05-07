@@ -14,9 +14,13 @@ public class SchemawithMemory extends AbstractSGBD<DefaultRelation> {
 	/** The size of a page, in number tuples. */
 	public static final int PAGE_SIZE = 20;
 	public static final int ATTRIBUTE_SIZE = 20;
-	public static final MemoryManager mem = new SimpleMemoryManager(PAGE_SIZE, ATTRIBUTE_SIZE);
+	private final MemoryManager mem;
 	private Map<String, Map<String, Index>> indexMap = new HashMap<>();
 
+	public SchemawithMemory() {
+		mem = new SimpleMemoryManager(PAGE_SIZE, ATTRIBUTE_SIZE);
+	}
+	
 	/**
 	 * @param schema
 	 * @return

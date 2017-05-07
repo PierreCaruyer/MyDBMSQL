@@ -15,7 +15,6 @@ import univlille.m1info.abd.phys.RenameOperator;
 import univlille.m1info.abd.phys.SelectionOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
 import univlille.m1info.abd.ra.JoinQuery;
-import univlille.m1info.abd.ra.OptimizerVisitorWithMemory;
 import univlille.m1info.abd.ra.ProjectionQuery;
 import univlille.m1info.abd.ra.RAQuery;
 import univlille.m1info.abd.ra.RelationNameQuery;
@@ -32,7 +31,7 @@ public class QueryEvaluator {
 	public QueryEvaluator(SchemawithMemory sgbd, RAQuery query) {
 		this.sgbd = sgbd;
 		this.query = query;
-		this.memoryManager = SchemawithMemory.mem;
+		this.memoryManager = sgbd.getMemoryManager();
 	}
 
 	public void evaluate() {
@@ -54,39 +53,35 @@ public class QueryEvaluator {
 
 	/** Creates an operator that allows to (efficiently) execute the given operation on the given database. */
 	protected PhysicalOperator getOperator(RAQuery query) {
-		OptimizerVisitorWithMemory visitor = new OptimizerVisitorWithMemory(sgbd);
-		query.accept(visitor);
-		RAQuery optimQuery = visitor.topQuery();
-		
 		PhysicalOperator operator = null;
-		if(!(optimQuery instanceof UnaryRAQuery) && !(optimQuery instanceof JoinQuery)) {
-			throw new UnsupportedOperationException("Unrecognized optimQuery type : " + optimQuery.getClass().getName());
-		} else	if(optimQuery instanceof UnaryRAQuery) {
-			RelationNameQuery relationNameQuery = getRelationNameSubQuery((UnaryRAQuery)optimQuery);
-			String relationName = relationNameQuery.getRelationName();
+		if(!(query instanceof UnaryRAQuery) && !(query instanceof JoinQuery)) {
+			throw new UnsupportedOperationException("Unrecognized query type : " + query.getClass().getName());
+		} else	if(query instanceof UnaryRAQuery) {
+			RelationNameQuery relationNameQuery = getRelationNameSubQuery((UnaryRAQuery)query);
+//			String relationName = relationNameQuery.getRelationName();
 //			Index relationIndex = lookForIndex(relationName);
-			if(optimQuery instanceof ProjectionQuery) {
-				ProjectionQuery projection = (ProjectionQuery)optimQuery;
+			if(query instanceof ProjectionQuery) {
+				ProjectionQuery projection = (ProjectionQuery)query;
 				SequentialAccessOnARelationOperator sequence;
 
-				sequence = getSequentialAccessFromRelationName(sgbd, relationName);
+				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
 				operator = new ProjectionOperator(sequence, memoryManager, projection.getProjectedAttributesNames());
-			} else if(optimQuery instanceof SelectionQuery) {
-				SelectionQuery selection = (SelectionQuery)optimQuery;
+			} else if(query instanceof SelectionQuery) {
+				SelectionQuery selection = (SelectionQuery)query;
 				SequentialAccessOnARelationOperator sequence;
 
-				sequence = getSequentialAccessFromRelationName(sgbd, relationName);
+				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
 				operator = new SelectionOperator(sequence, selection.getAttributeName(), selection.getConstantValue(), selection.getComparisonOperator(), memoryManager);
-			} else if(optimQuery instanceof RenameQuery) {
-				RenameQuery rename = (RenameQuery)optimQuery;
+			} else if(query instanceof RenameQuery) {
+				RenameQuery rename = (RenameQuery)query;
 				SequentialAccessOnARelationOperator sequence;
 
-				sequence = getSequentialAccessFromRelationName(sgbd, relationName);
+				sequence = getSequentialAccessFromRelationName(sgbd, relationNameQuery.getRelationName());
 				operator = new RenameOperator(sequence, rename.getOldAttrName(), rename.getNewAttrName(), memoryManager);
 			}
 		}
 		else {
-			JoinQuery join = (JoinQuery)optimQuery;
+			JoinQuery join = (JoinQuery)query;
 			SequentialAccessOnARelationOperator leftSequence, rightSequence;
 			RelationNameQuery rightRelationNameQuery = getRightSubQueryName(join), leftRelationNameQuery = getLeftSubQueryName(join);
 //			Index leftIndex = lookForIndex(rightRelationNameQuery.getRelationName());
@@ -94,21 +89,23 @@ public class QueryEvaluator {
 			rightSequence = getSequentialAccessFromRelationName(sgbd, rightRelationNameQuery.getRelationName());
 			leftSequence = getSequentialAccessFromRelationName(sgbd, leftRelationNameQuery.getRelationName());
 
-			operator = new JoinOperator(rightSequence, leftSequence, SchemawithMemory.mem);
+			operator = new JoinOperator(rightSequence, leftSequence, sgbd.getMemoryManager());
 		}
 		return operator;
 	}
 
-	protected RelationNameQuery getLeftSubQueryName(JoinQuery optimQuery) {
-		return getJoinSubQueryName(optimQuery, true);
+	protected RelationNameQuery getLeftSubQueryName(JoinQuery query) {
+		return getJoinSubQueryName(query, true);
 	}
 
-	protected RelationNameQuery getRightSubQueryName(JoinQuery optimQuery) {
-		return getJoinSubQueryName(optimQuery, false);
+	protected RelationNameQuery getRightSubQueryName(JoinQuery query) {
+		return getJoinSubQueryName(query, false);
 	}
 
 	protected RelationNameQuery getJoinSubQueryName(JoinQuery query, boolean left) {
-		RAQuery subQuery = (left)? query.getLeftSubQuery() : query.getRightSubQuery();
+		RAQuery subQuery;
+
+		subQuery = (left)? query.getLeftSubQuery() : query.getRightSubQuery();
 
 		if(subQuery instanceof RelationNameQuery)
 			return (RelationNameQuery)subQuery;
@@ -123,7 +120,7 @@ public class QueryEvaluator {
 		SequentialAccessOnARelationOperator sequentialOperator;
 
 		relation = sgbd.getRelation(relName);
-		sequentialOperator = new SequentialAccessOnARelationOperator(relation, SchemawithMemory.mem);
+		sequentialOperator = new SequentialAccessOnARelationOperator(relation, sgbd.getMemoryManager());
 
 		return sequentialOperator;
 	}

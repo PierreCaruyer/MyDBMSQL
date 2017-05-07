@@ -14,12 +14,10 @@ public class TP6 {
 	
 	private SchemawithMemory sgbd;
 	private MemoryManager mem;
-	private int nbTuples = 0;
-	private int nbPages = 0;
 	
 	public TP6() {
-		sgbd = new SchemawithMemory();
-		mem = SchemawithMemory.mem;
+		SchemawithMemory sgbd = new SchemawithMemory();
+		mem = sgbd.getMemoryManager();
 	}
 	
 	public List<String[]> getOperatorTuples(PhysicalOperator operator) throws NotEnoughMemoryException{
@@ -37,11 +35,6 @@ public class TP6 {
 		return tuples;
 	}
 	
-	public void resetTestsOperatiosn() {
-		nbPages = 0;
-		nbTuples = 0;
-	}
-	
 	private List<String[]> retrievePageTuples(Page p) {
 		List<String[]> tupleArray = new ArrayList<>();
 		p.switchToReadMode();
@@ -55,19 +48,11 @@ public class TP6 {
 			Arrays.toString(tuple);
 	}
 	
-	public MemoryManager getMemoryManager() {
-		return mem;
-	}
-	
 	public SchemawithMemory getSgbd() {
 		return sgbd;
 	}
 	
-	public int getPageCount() {
-		return nbPages;
-	}
-	
-	public int getTupleCount() {
-		return nbTuples;
+	public MemoryManager getMemoryManager() {
+		return mem;
 	}
 }

@@ -11,7 +11,7 @@ public class JoinWithIndex extends JoinOperator implements IndexOperator{
 	
 	
 	public JoinWithIndex(IndexOperator right, IndexOperator left, SchemawithMemory sgbd) {
-		super(right, left, SchemawithMemory.mem);
+		super(right, left, sgbd.getMemoryManager());
 	}
 
 	protected DefaultIndex index;

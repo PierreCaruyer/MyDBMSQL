@@ -11,7 +11,7 @@ public class ProjectionWithIndex extends ProjectionOperator implements IndexOper
 	protected DefaultIndex index;
 	
 	public ProjectionWithIndex(IndexOperator operator, SchemawithMemory sgbd, String ... atributes) {
-		super(operator, SchemawithMemory.mem, atributes);
+		super(operator, sgbd.getMemoryManager(), atributes);
 	}
 
 	@Override

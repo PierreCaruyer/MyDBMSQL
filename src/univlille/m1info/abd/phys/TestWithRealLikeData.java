@@ -26,7 +26,7 @@ public class TestWithRealLikeData {
 	public void setUp() {
 		tp6 = new TP6();
 		sgbd = tp6.getSgbd();
-		mem = tp6.getMemoryManager();
+		mem = sgbd.getMemoryManager();
 	}
 
 	private List<String[]> loadDataFromCSVFile (String fileName, char separator) throws IOException {
@@ -67,13 +67,13 @@ public class TestWithRealLikeData {
 		
 		int pageNb;
 		while ((pageNb = sel.nextPage()) != -1) {
-			Page page = SchemawithMemory.mem.loadPage(pageNb);
+			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
 			String[] tuple;
 			while ((tuple = page.nextTuple()) != null) {
 				System.out.println(Arrays.toString(tuple));
 			}
-			SchemawithMemory.mem.releasePage(pageNb, true);
+			mem.releasePage(pageNb, true);
 		}
 	}
 }

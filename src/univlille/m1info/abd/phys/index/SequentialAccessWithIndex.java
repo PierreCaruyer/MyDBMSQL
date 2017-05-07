@@ -22,7 +22,7 @@ public class SequentialAccessWithIndex extends SequentialAccessOnARelationOperat
 	protected String attributeNameIndex;
 	
 	public SequentialAccessWithIndex(DefaultRelation relation, SchemawithMemory sgbd, String relName, String attrName) {
-		super(relation, SchemawithMemory.mem);
+		super(relation, sgbd.getMemoryManager());
 		this.sgbd = sgbd;
 		this.rel = relation;
 		relationNameIndex = relName;

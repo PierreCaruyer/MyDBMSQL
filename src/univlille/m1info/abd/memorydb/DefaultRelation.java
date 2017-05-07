@@ -15,12 +15,10 @@ public class DefaultRelation {
 	protected final MemoryManager mem;
 	protected final int sortsCount;
 	protected final String relationName;
-	protected final SchemawithMemory sgbd;
 
 	public DefaultRelation(RelationSchema schema, SchemawithMemory sgbd) {
-		this.mem = SchemawithMemory.mem;
+		this.mem = sgbd.getMemoryManager();
 		this.schema = schema;
-		this.sgbd = sgbd;
 		this.sortsCount = schema.getSort().length;
 		this.relationName = schema.getName();
 	}
