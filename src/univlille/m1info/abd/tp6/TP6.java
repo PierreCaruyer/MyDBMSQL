@@ -16,7 +16,7 @@ public class TP6 {
 	private MemoryManager mem;
 	
 	public TP6() {
-		SchemawithMemory sgbd = new SchemawithMemory();
+		sgbd = new SchemawithMemory();
 		mem = sgbd.getMemoryManager();
 	}
 	

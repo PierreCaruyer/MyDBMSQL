@@ -35,7 +35,7 @@ public class TestTP6 {
 	public void setUp() {
 		tp6 = new TP6();
 		sgbd = tp6.getSgbd();
-		mem = tp6.getMemoryManager();
+		mem = sgbd.getMemoryManager();
 		relations = new DisposalRelations(sgbd);
 	}
 
