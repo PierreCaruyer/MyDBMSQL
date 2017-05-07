@@ -31,7 +31,7 @@ public class QueryEvaluator {
 	public QueryEvaluator(SchemawithMemory sgbd, RAQuery query) {
 		this.sgbd = sgbd;
 		this.query = query;
-		this.memoryManager = SchemawithMemory.mem;
+		this.memoryManager = sgbd.getMemoryManager();
 	}
 
 	public void evaluate() {
@@ -58,8 +58,8 @@ public class QueryEvaluator {
 			throw new UnsupportedOperationException("Unrecognized query type : " + query.getClass().getName());
 		} else	if(query instanceof UnaryRAQuery) {
 			RelationNameQuery relationNameQuery = getRelationNameSubQuery((UnaryRAQuery)query);
-			String relationName = relationNameQuery.getRelationName();
-			Index relationIndex = lookForIndex(relationName);
+//			String relationName = relationNameQuery.getRelationName();
+//			Index relationIndex = lookForIndex(relationName);
 			if(query instanceof ProjectionQuery) {
 				ProjectionQuery projection = (ProjectionQuery)query;
 				SequentialAccessOnARelationOperator sequence;
@@ -84,12 +84,12 @@ public class QueryEvaluator {
 			JoinQuery join = (JoinQuery)query;
 			SequentialAccessOnARelationOperator leftSequence, rightSequence;
 			RelationNameQuery rightRelationNameQuery = getRightSubQueryName(join), leftRelationNameQuery = getLeftSubQueryName(join);
-			Index leftIndex = lookForIndex(rightRelationNameQuery.getRelationName());
-			Index rightIndex = lookForIndex(leftRelationNameQuery.getRelationName());
+//			Index leftIndex = lookForIndex(rightRelationNameQuery.getRelationName());
+//			Index rightIndex = lookForIndex(leftRelationNameQuery.getRelationName());
 			rightSequence = getSequentialAccessFromRelationName(sgbd, rightRelationNameQuery.getRelationName());
 			leftSequence = getSequentialAccessFromRelationName(sgbd, leftRelationNameQuery.getRelationName());
 
-			operator = new JoinOperator(rightSequence, leftSequence, SchemawithMemory.mem);
+			operator = new JoinOperator(rightSequence, leftSequence, sgbd.getMemoryManager());
 		}
 		return operator;
 	}
@@ -120,7 +120,7 @@ public class QueryEvaluator {
 		SequentialAccessOnARelationOperator sequentialOperator;
 
 		relation = sgbd.getRelation(relName);
-		sequentialOperator = new SequentialAccessOnARelationOperator(relation, SchemawithMemory.mem);
+		sequentialOperator = new SequentialAccessOnARelationOperator(relation, sgbd.getMemoryManager());
 
 		return sequentialOperator;
 	}

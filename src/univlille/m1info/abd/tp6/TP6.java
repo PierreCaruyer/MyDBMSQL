@@ -4,19 +4,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import univlille.m1info.abd.memorydb.SchemawithMemory;
 import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.NotEnoughMemoryException;
 import univlille.m1info.abd.phys.Page;
 import univlille.m1info.abd.phys.PhysicalOperator;
-import univlille.m1info.abd.phys.SimpleMemoryManager;
 
 public class TP6 {
-	private MemoryManager mem;
-	private int nbTuples = 0;
-	private int nbPages = 0;
 	
-	public TP6(int pageSize, int attrSize) {
-		mem = new SimpleMemoryManager(pageSize, attrSize);
+	private SchemawithMemory sgbd;
+	private MemoryManager mem;
+	
+	public TP6() {
+		SchemawithMemory sgbd = new SchemawithMemory();
+		mem = sgbd.getMemoryManager();
 	}
 	
 	public List<String[]> getOperatorTuples(PhysicalOperator operator) throws NotEnoughMemoryException{
@@ -34,11 +35,6 @@ public class TP6 {
 		return tuples;
 	}
 	
-	public void resetTestsOperatiosn() {
-		nbPages = 0;
-		nbTuples = 0;
-	}
-	
 	private List<String[]> retrievePageTuples(Page p) {
 		List<String[]> tupleArray = new ArrayList<>();
 		p.switchToReadMode();
@@ -52,15 +48,11 @@ public class TP6 {
 			Arrays.toString(tuple);
 	}
 	
+	public SchemawithMemory getSgbd() {
+		return sgbd;
+	}
+	
 	public MemoryManager getMemoryManager() {
 		return mem;
-	}
-	
-	public int getPageCount() {
-		return nbPages;
-	}
-	
-	public int getTupleCount() {
-		return nbTuples;
 	}
 }

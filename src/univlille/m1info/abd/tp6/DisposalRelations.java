@@ -9,7 +9,6 @@ import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.ProjectionOperator;
 import univlille.m1info.abd.phys.SelectionOperator;
 import univlille.m1info.abd.phys.SequentialAccessOnARelationOperator;
-import univlille.m1info.abd.phys.SimpleMemoryManager;
 import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.DefaultRelationSchema;
 import univlille.m1info.abd.schema.RelationSchema;
@@ -128,22 +127,7 @@ public class DisposalRelations {
 		return new JoinOperator(getLongRightTable(), getLongLeftTable(), mem);
 	}
 
-	public SequentialAccessOnARelationOperator getSimpleModTable() {
-		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
-		MemoryManager mem = new SimpleMemoryManager(100, 2);
-		DefaultRelation rel = new DefaultRelation(schema, mem);
-
-		ArrayList<String[]> tuples = new ArrayList<>();
-		for (int i = 1; i <= 9; i++) {
-			tuples.add(new String[] { "a" + (i % 3), "b" + i });
-		}
-
-		rel.loadTuples(tuples);
-
-		return new SequentialAccessOnARelationOperator(rel, mem);
-	}
-
-	public SequentialAccessOnARelationOperator getLeftModTable() {
+	public SequentialAccessOnARelationOperator getLeftModTable(MemoryManager mem) {
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		DefaultRelation rel = new DefaultRelation(schema, mem);
 
@@ -157,7 +141,7 @@ public class DisposalRelations {
 		return new SequentialAccessOnARelationOperator(rel, mem);
 	}
 
-	public SequentialAccessOnARelationOperator getRightModTable() {
+	public SequentialAccessOnARelationOperator getRightModTable(MemoryManager mem) {
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rc");
 		DefaultRelation rel = new DefaultRelation(schema, mem);
 

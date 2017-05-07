@@ -69,7 +69,7 @@ public class DefaultIndex implements Index{
 	
 	public void createIndex(int address){
 		try{
-			Page page = SchemawithMemory.mem.loadPage(address);
+			Page page = sgbd.getMemoryManager().loadPage(address);
 			
 			for(String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
 				List<Integer> indexedTuples = getListofAddresses(tuple);
@@ -79,7 +79,7 @@ public class DefaultIndex implements Index{
 				addElement(Arrays.toString(tuple), address);
 			}
 			
-			SchemawithMemory.mem.releasePage(address, false);
+			sgbd.getMemoryManager().releasePage(address, false);
 		} catch(NotEnoughMemoryException e) {
 			e.printStackTrace();
 		}

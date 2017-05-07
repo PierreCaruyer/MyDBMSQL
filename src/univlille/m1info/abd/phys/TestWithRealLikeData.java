@@ -15,17 +15,18 @@ import univlille.m1info.abd.memorydb.SchemawithMemory;
 import univlille.m1info.abd.ra.ComparisonOperator;
 import univlille.m1info.abd.schema.DefaultRelationSchema;
 import univlille.m1info.abd.tp6.TP6;
-import univlille.m1info.abd.tp6.TestTP6;
 
 public class TestWithRealLikeData {
 	
 	private TP6 tp6;
 	private MemoryManager mem;
+	private SchemawithMemory sgbd;
 	
 	@Before
 	public void setUp() {
-		tp6 = new TP6(TestTP6.PAGE_SIZE, TestTP6.ATTRIBUTE_SIZE);
-		mem = tp6.getMemoryManager();
+		tp6 = new TP6();
+		sgbd = tp6.getSgbd();
+		mem = sgbd.getMemoryManager();
 	}
 
 	private List<String[]> loadDataFromCSVFile (String fileName, char separator) throws IOException {
@@ -49,7 +50,7 @@ public class TestWithRealLikeData {
 	private DefaultRelation createRelationFromCSVFile (String fileName, char separator, String relName) throws IOException {
 		List<String[]> tuples = loadDataFromCSVFile(fileName, separator);
 		DefaultRelationSchema schema = new DefaultRelationSchema(relName, tuples.get(0));
-		DefaultRelation rel = new DefaultRelation(schema, SchemawithMemory.mem);
+		DefaultRelation rel = new DefaultRelation(schema, sgbd.getMemoryManager());
 		tuples.remove(0);
 		rel.loadTuples(tuples);
 		return rel;
@@ -66,13 +67,13 @@ public class TestWithRealLikeData {
 		
 		int pageNb;
 		while ((pageNb = sel.nextPage()) != -1) {
-			Page page = SchemawithMemory.mem.loadPage(pageNb);
+			Page page = mem.loadPage(pageNb);
 			page.switchToReadMode();
 			String[] tuple;
 			while ((tuple = page.nextTuple()) != null) {
 				System.out.println(Arrays.toString(tuple));
 			}
-			SchemawithMemory.mem.releasePage(pageNb, true);
+			mem.releasePage(pageNb, true);
 		}
 	}
 }
