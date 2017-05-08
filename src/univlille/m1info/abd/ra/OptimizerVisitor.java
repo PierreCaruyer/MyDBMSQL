@@ -145,7 +145,7 @@ public class OptimizerVisitor implements RAQueryVisitor {
 				// TODO
 			} 
 		}
-//		System.out.println("RES => " + res);
+		System.out.println("RES => " + res);
 		
 		return res;
 	}

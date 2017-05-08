@@ -14,13 +14,11 @@ public class DefaultRelation {
 	protected final RelationSchema schema;
 	protected final MemoryManager mem;
 	protected final int sortsCount;
-	protected final String relationName;
 
-	public DefaultRelation(RelationSchema schema, SchemawithMemory sgbd) {
-		this.mem = sgbd.getMemoryManager();
+	public DefaultRelation(RelationSchema schema, MemoryManager mem) {
+		this.mem = mem;
 		this.schema = schema;
 		this.sortsCount = schema.getSort().length;
-		this.relationName = schema.getName();
 	}
 
 	public RelationSchema getRelationSchema() {
@@ -54,6 +52,7 @@ public class DefaultRelation {
 
 			for (int i = 0; i < tuples.size(); i++) {
 				currentPage.AddTuple(tuples.get(i));
+
 				if (currentPage.isFull() && i != tuples.size() - 1) {
 					lastPage = currentPage;
 

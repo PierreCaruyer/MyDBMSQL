@@ -23,6 +23,7 @@ public class DefaultRelationSchema implements RelationSchema {
 		checkCorrectRelationName(name);
 		usedNames.add(name);
 		this.name = name;
+
 		if (attributeNames.length == 0)
 			throw new IllegalArgumentException("A relation description should have at least one attribute");
 		

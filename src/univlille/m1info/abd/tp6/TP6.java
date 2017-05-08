@@ -1,7 +1,6 @@
 package univlille.m1info.abd.tp6;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import univlille.m1info.abd.memorydb.SchemawithMemory;
@@ -16,7 +15,7 @@ public class TP6 {
 	private MemoryManager mem;
 	
 	public TP6() {
-		sgbd = new SchemawithMemory();
+		SchemawithMemory sgbd = new SchemawithMemory();
 		mem = sgbd.getMemoryManager();
 	}
 	
@@ -41,11 +40,6 @@ public class TP6 {
 		for(String[] tuple = p.nextTuple(); tuple != null; tuple = p.nextTuple())
 			tupleArray.add(tuple);
 		return tupleArray;
-	}
-	
-	public void displayPageContent(List<String[]> tuples) {
-		for(String[] tuple : tuples)
-			Arrays.toString(tuple);
 	}
 	
 	public SchemawithMemory getSgbd() {

@@ -1,44 +1,30 @@
 package univlille.m1info.abd.phys.index;
 
-import univlille.m1info.abd.index.DefaultIndex;
-import univlille.m1info.abd.index.Index;
-import univlille.m1info.abd.memorydb.SchemawithMemory;
-import univlille.m1info.abd.phys.SelectionOperator;
-import univlille.m1info.abd.ra.ComparisonOperator;
+import univlille.m1info.abd.phys.PhysicalOperator;
 import univlille.m1info.abd.schema.RelationSchema;
 
-public class SelectionWithIndex extends SelectionOperator implements IndexOperator{
+public class SelectionWithIndex implements PhysicalOperator{
 
-	protected DefaultIndex index;
 	
-	public SelectionWithIndex(IndexOperator operator, String attrName, String value, ComparisonOperator comparator, SchemawithMemory sgbd) {
-		super(operator, attrName, value, comparator, sgbd.getMemoryManager());
-	}
-
+	
 	@Override
 	public String[] nextTuple() {
-		return super.nextTuple();
+		return null;
 	}
 
 	@Override
 	public RelationSchema resultSchema() {
-		return super.resultSchema();
+		return null;
 	}
 
 	@Override
 	public void reset() {
-		super.reset();
+		
 	}
 
 	@Override
 	public int nextPage() {
-		int address = super.nextPage();
-		index.createIndex(address);
-		return address;
+		return 0;
 	}
 
-	@Override
-	public Index getIndex() {
-		return index;
-	}
 }

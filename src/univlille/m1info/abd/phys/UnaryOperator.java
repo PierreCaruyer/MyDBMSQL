@@ -1,6 +1,5 @@
 package univlille.m1info.abd.phys;
 
-import univlille.m1info.abd.index.Index;
 import univlille.m1info.abd.schema.RelationSchema;
 
 /**
@@ -15,7 +14,6 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 	protected final int sortsLength;
 	protected final PhysicalOperator operator;
 	protected int operatorTuplePtr;
-	protected Index index;
 	
 	public UnaryOperator(PhysicalOperator operator, MemoryManager mem, int sortsLength) {
 		this.operator = operator;
@@ -25,12 +23,12 @@ public abstract class UnaryOperator implements PhysicalOperator{ // Equivalent t
 	}
 	
 	@Override
-	public abstract RelationSchema resultSchema();
-	
-	@Override
 	public String[] nextTuple() {
 		return null;
 	}
+	
+	@Override
+	public abstract RelationSchema resultSchema();
 	
 	@Override
 	public void reset() {

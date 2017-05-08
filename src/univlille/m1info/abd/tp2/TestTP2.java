@@ -133,6 +133,7 @@ public class TestTP2 {
 		
 		// Apply a join operation JOIN on these relation
 		String resultRelName = tp2.computeJoin(sgbd, "RELONE", "RELTWO");
+		
 		// Check the correct relation description of the result: the relation description is the same as the one of the input relation
 		assertArrayEquals(new String[]{"attrA", "attrB", "attrC"}, sgbd.getRelation(resultRelName).getRelationSchema().getSort());
 		

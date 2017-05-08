@@ -3,9 +3,7 @@ package univlille.m1info.abd.tp6;
 import java.util.ArrayList;
 import java.util.List;
 
-import univlille.m1info.abd.index.DefaultIndex;
 import univlille.m1info.abd.memorydb.DefaultRelation;
-import univlille.m1info.abd.memorydb.SchemawithMemory;
 import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.ProjectionOperator;
@@ -18,20 +16,17 @@ import univlille.m1info.abd.schema.RelationSchema;
 public class DisposalRelations {
 
 	private MemoryManager mem;
-	private SchemawithMemory sgbd;
 
-	public DisposalRelations(SchemawithMemory sgbd) {
-		this.sgbd = sgbd;
-		if(sgbd == null)
-			System.out.println("null");
-		this.mem = sgbd.getMemoryManager();
+	public DisposalRelations(MemoryManager mem) {
+		this.mem = mem;
 	}
 
 	/**
 	 * Loads a Short table
 	 */
 	public SequentialAccessOnARelationOperator getRightLoadedTable() {
-		sgbd.createRelation("RELONE", new String[] { "attrA", "attrB", "attrC" });
+		RelationSchema schema = new DefaultRelationSchema("RELONE", new String[] { "attrA", "attrB", "attrC" });
+		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
 
 		tuples.add(new String[] { "a5", "b1", "c3" });
@@ -39,16 +34,17 @@ public class DisposalRelations {
 		tuples.add(new String[] { "a2", "b5", "c2" });
 		tuples.add(new String[] { "a3", "b8", "c7" });
 
-		sgbd.FillRelation("RELONE", tuples);
+		relation.loadTuples(tuples);
 
-		return new SequentialAccessOnARelationOperator(sgbd.getRelation("RELONE"), mem);
+		return new SequentialAccessOnARelationOperator(relation, mem);
 	}
 
 	/**
 	 * Loads a Short table
 	 */
 	public SequentialAccessOnARelationOperator getLeftLoadedTable() {
-		sgbd.createRelation("RELTWO", new String[] { "attrE", "attrD", "attrA" });
+		RelationSchema schema = new DefaultRelationSchema("RELTWO", new String[] { "attrE", "attrD", "attrA" });
+		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
 
 		tuples.add(new String[] { "e4", "d1", "a5" });
@@ -56,9 +52,9 @@ public class DisposalRelations {
 		tuples.add(new String[] { "e9", "d5", "a3" });
 		tuples.add(new String[] { "e6", "d3", "a2" });
 
-		sgbd.FillRelation("RELTWO", tuples);
+		relation.loadTuples(tuples);
 
-		return new SequentialAccessOnARelationOperator(sgbd.getRelation("RELTWO"), mem);
+		return new SequentialAccessOnARelationOperator(relation, mem);
 	}
 
 	/**
@@ -66,9 +62,8 @@ public class DisposalRelations {
 	 * mecanisms' correctness
 	 */
 	public SequentialAccessOnARelationOperator getLongRightTable() {
-		String relName = "RELLONGR";
-		String indexedAttribute = "attrA";
-		sgbd.createRelation("RELLONGR", new String[] { "attrA", "attrB", "attrC" });
+		RelationSchema schema = new DefaultRelationSchema("RELLONGR", new String[] { "attrA", "attrB", "attrC" });
+		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
 
 		for (int i = 0; i < TestTP6.REPEAT; i++) {
@@ -78,14 +73,14 @@ public class DisposalRelations {
 			tuples.add(new String[] { "a3", "b8", "c7" });
 		}
 
-		sgbd.addIndex(relName, indexedAttribute, new DefaultIndex(relName, indexedAttribute, sgbd));
-		sgbd.FillRelation(relName, tuples);
+		relation.loadTuples(tuples);
 
-		return new SequentialAccessOnARelationOperator(sgbd.getRelation("RELLONGR"), mem);
+		return new SequentialAccessOnARelationOperator(relation, mem);
 	}
 
 	public SequentialAccessOnARelationOperator getLongLeftTable() {
-		sgbd.createRelation("RELLONGL", new String[] { "attrE", "attrD", "attrA" });
+		RelationSchema schema = new DefaultRelationSchema("RELLONGR", new String[] { "attrE", "attrD", "attrA" });
+		DefaultRelation relation = new DefaultRelation(schema, mem);
 		List<String[]> tuples = new ArrayList<>();
 
 		for (int i = 0; i < TestTP6.REPEAT; i++) {
@@ -95,9 +90,9 @@ public class DisposalRelations {
 			tuples.add(new String[] { "e6", "d3", "a2" });
 		}
 
-		sgbd.FillRelation("RELLONGL", tuples);
+		relation.loadTuples(tuples);
 
-		return new SequentialAccessOnARelationOperator(sgbd.getRelation("RELLONGL"), mem);
+		return new SequentialAccessOnARelationOperator(relation, mem);
 	}
 
 	// Selection operator w/ few tuples
@@ -132,9 +127,9 @@ public class DisposalRelations {
 		return new JoinOperator(getLongRightTable(), getLongLeftTable(), mem);
 	}
 
-	public SequentialAccessOnARelationOperator getLeftModTable(MemoryManager manager) {
+	public SequentialAccessOnARelationOperator getLeftModTable(MemoryManager mem) {
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
-		DefaultRelation rel = new DefaultRelation(schema, sgbd);
+		DefaultRelation rel = new DefaultRelation(schema, mem);
 
 		List<String[]> tuples = new ArrayList<>();
 		for (int i = 1; i <= 9; i++) {
@@ -143,12 +138,12 @@ public class DisposalRelations {
 
 		rel.loadTuples(tuples);
 
-		return new SequentialAccessOnARelationOperator(rel, manager);
+		return new SequentialAccessOnARelationOperator(rel, mem);
 	}
 
-	public SequentialAccessOnARelationOperator getRightModTable(MemoryManager manager) {
+	public SequentialAccessOnARelationOperator getRightModTable(MemoryManager mem) {
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rc");
-		DefaultRelation rel = new DefaultRelation(schema, sgbd);
+		DefaultRelation rel = new DefaultRelation(schema, mem);
 
 		List<String[]> tuples = new ArrayList<>();
 		for (int i = 1; i <= 9; i++) {
@@ -157,7 +152,7 @@ public class DisposalRelations {
 
 		rel.loadTuples(tuples);
 
-		return new SequentialAccessOnARelationOperator(rel, manager);
+		return new SequentialAccessOnARelationOperator(rel, mem);
 	}
 
 	public List<String[]> getExpectedResultJoinTuples() {

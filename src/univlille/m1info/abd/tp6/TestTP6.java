@@ -6,12 +6,12 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import univlille.m1info.abd.memorydb.SchemawithMemory;
 import univlille.m1info.abd.phys.JoinOperator;
 import univlille.m1info.abd.phys.MemoryManager;
 import univlille.m1info.abd.phys.NotEnoughMemoryException;
@@ -25,18 +25,18 @@ import univlille.m1info.abd.ra.ComparisonOperator;
 
 public class TestTP6 {
 
+	public static final int PAGE_SIZE = 20;
+	public static final int ATTRIBUTE_SIZE = 20;
 	public static final int REPEAT = 15;
 	private DisposalRelations relations;
-	private SchemawithMemory sgbd;
 	private MemoryManager mem;
 	private TP6 tp6;
-
+	
 	@Before
 	public void setUp() {
 		tp6 = new TP6();
-		sgbd = tp6.getSgbd();
-		mem = sgbd.getMemoryManager();
-		relations = new DisposalRelations(sgbd);
+		mem = tp6.getMemoryManager();
+		relations = new DisposalRelations(mem);
 	}
 
 	private void synthesizeTest(String testName, PhysicalOperator testOperator, List<String[]> expectedTuples, boolean finalTest) {
@@ -270,12 +270,16 @@ public class TestTP6 {
 			Page page = mem.loadPage(pageNb);
 			
 			page.switchToReadMode();
-			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
+			for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple()) {
+				System.out.println(Arrays.toString(tuple));
 				result.add(tuple);
+			}
 			mem.releasePage(pageNb, false);
 			pageNb = join.nextPage();
 		}
-		
+		for(String[] array : resultArray)
+			System.out.println(Arrays.toString(array));
+
 		assertEquals(resultArray.size(), result.size());
 		assertTrue(pageContentEquals(resultArray, result));
 	}

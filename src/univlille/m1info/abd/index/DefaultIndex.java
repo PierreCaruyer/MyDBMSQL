@@ -58,8 +58,6 @@ public class DefaultIndex implements Index{
 	@Override
 	public boolean addElement(String key, int address) {
 		if (index.containsKey(key)) {
-			if(index.get(key).contains(new Integer(address)))
-				return false;
 			return (index.get(key)).add(new Integer(address));
 		} else {
 			List <Integer> tmp= new ArrayList<>();
@@ -69,7 +67,7 @@ public class DefaultIndex implements Index{
 		}
 	}
 	
-	public void createIndex(int address) {
+	public void createIndex(int address){
 		try{
 			Page page = sgbd.getMemoryManager().loadPage(address);
 			
@@ -85,11 +83,6 @@ public class DefaultIndex implements Index{
 		} catch(NotEnoughMemoryException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public void updateKeyValues(String key, List<Integer> values) {
-		for(Integer val : values)
-			addElement(key, val);
 	}
 	
 	public SchemawithMemory getSgbd() {

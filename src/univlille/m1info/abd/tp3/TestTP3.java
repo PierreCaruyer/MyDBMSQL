@@ -1,7 +1,6 @@
 package univlille.m1info.abd.tp3;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;

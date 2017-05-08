@@ -31,7 +31,7 @@ public class TestWithRealLikeData {
 
 	private List<String[]> loadDataFromCSVFile (String fileName, char separator) throws IOException {
 		List<String> lines = Files.readAllLines(Paths.get(fileName));
-		String sep = "["+separator+"|\\s]";
+		String sep = ""+separator;
 		
 		List<String[]> result = new ArrayList<>();
 		for (String line: lines) {
@@ -50,7 +50,7 @@ public class TestWithRealLikeData {
 	private DefaultRelation createRelationFromCSVFile (String fileName, char separator, String relName) throws IOException {
 		List<String[]> tuples = loadDataFromCSVFile(fileName, separator);
 		DefaultRelationSchema schema = new DefaultRelationSchema(relName, tuples.get(0));
-		DefaultRelation rel = new DefaultRelation(schema, sgbd);
+		DefaultRelation rel = new DefaultRelation(schema, sgbd.getMemoryManager());
 		tuples.remove(0);
 		rel.loadTuples(tuples);
 		return rel;
@@ -59,7 +59,7 @@ public class TestWithRealLikeData {
 
 	@Test
 	public void testExample () throws IOException, NotEnoughMemoryException {
-		DefaultRelation relFilm = createRelationFromCSVFile("/tmp/vlille-realtime (1).csv", ';', "FILMS");
+		DefaultRelation relFilm = createRelationFromCSVFile("/tmp/vlille-realtime (1).csv", ',', "FILMS");
 		//DefaultRelation relPresident = createRelationFromCSVFile("/tmp/USPRESIDENT.csv", ',' , "PRESIDENTS");
 		
 		SequentialAccessOnARelationOperator tableOp = new SequentialAccessOnARelationOperator(relFilm, mem);
