@@ -1,6 +1,8 @@
 package univlille.m1info.abd.tp7;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import univlille.m1info.abd.index.Index;
 import univlille.m1info.abd.memorydb.DefaultRelation;
@@ -28,38 +30,47 @@ public class QueryEvaluator {
 	protected MemoryManager memoryManager;
 	protected RAQuery query;
 
-	public QueryEvaluator(SchemawithMemory sgbd, RAQuery query) {
+	public QueryEvaluator(RAQuery query, SchemawithMemory sgbd) {
 		this.sgbd = sgbd;
 		this.query = query;
 		this.memoryManager = sgbd.getMemoryManager();
 	}
 
-	public void evaluate() {
+	public List<String[]> evaluate() {
+		List<String[]> tuples = new ArrayList<>();
+
 		try {
-			PhysicalOperator operator = getOperator(query);
-			int pageNb;
-			while ((pageNb = operator.nextPage()) != -1) {
-				Page page;
-				page = memoryManager.loadPage(pageNb);
+			int address;
+			PhysicalOperator op = getOperator();
+			while((address = op.nextPage()) != -1) {
+				Page page = memoryManager.loadPage(address);
 				page.switchToReadMode();
-				for (String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
-					System.out.println(Arrays.toString(tuple));
-				memoryManager.releasePage(pageNb, false);
+				for(String[] tuple = page.nextTuple(); tuple != null; tuple = page.nextTuple())
+					tuples.add(tuple);
+				memoryManager.releasePage(address, false);
 			}
-		} catch (NotEnoughMemoryException e) {
+		} catch(NotEnoughMemoryException e) {
 			e.printStackTrace();
 		}
+
+		return tuples;
+	}
+
+	public void result() {
+		List<String[]> tuples = evaluate();
+		for(String[] tuple : tuples)
+			System.out.println(Arrays.toString(tuple));
 	}
 
 	/** Creates an operator that allows to (efficiently) execute the given operation on the given database. */
-	protected PhysicalOperator getOperator(RAQuery query) {
+	protected PhysicalOperator getOperator() {
 		PhysicalOperator operator = null;
 		if(!(query instanceof UnaryRAQuery) && !(query instanceof JoinQuery)) {
 			throw new UnsupportedOperationException("Unrecognized query type : " + query.getClass().getName());
 		} else	if(query instanceof UnaryRAQuery) {
 			RelationNameQuery relationNameQuery = getRelationNameSubQuery((UnaryRAQuery)query);
-//			String relationName = relationNameQuery.getRelationName();
-//			Index relationIndex = lookForIndex(relationName);
+			//			String relationName = relationNameQuery.getRelationName();
+			//			Index relationIndex = lookForIndex(relationName);
 			if(query instanceof ProjectionQuery) {
 				ProjectionQuery projection = (ProjectionQuery)query;
 				SequentialAccessOnARelationOperator sequence;
@@ -84,8 +95,8 @@ public class QueryEvaluator {
 			JoinQuery join = (JoinQuery)query;
 			SequentialAccessOnARelationOperator leftSequence, rightSequence;
 			RelationNameQuery rightRelationNameQuery = getRightSubQueryName(join), leftRelationNameQuery = getLeftSubQueryName(join);
-//			Index leftIndex = lookForIndex(rightRelationNameQuery.getRelationName());
-//			Index rightIndex = lookForIndex(leftRelationNameQuery.getRelationName());
+			//			Index leftIndex = lookForIndex(rightRelationNameQuery.getRelationName());
+			//			Index rightIndex = lookForIndex(leftRelationNameQuery.getRelationName());
 			rightSequence = getSequentialAccessFromRelationName(sgbd, rightRelationNameQuery.getRelationName());
 			leftSequence = getSequentialAccessFromRelationName(sgbd, leftRelationNameQuery.getRelationName());
 

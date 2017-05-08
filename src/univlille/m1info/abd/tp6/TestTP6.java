@@ -284,7 +284,7 @@ public class TestTP6 {
 		assertTrue(pageContentEquals(resultArray, result));
 	}
 
-	public boolean pageContentEquals(List<String[]> expected, List<String[]> actual) {
+	private boolean pageContentEquals(List<String[]> expected, List<String[]> actual) {
 		for (int i = 0; i < expected.size(); i++) {
 			String[] tuple = expected.get(i);
 			String[] actualTuple = expected.get(i);

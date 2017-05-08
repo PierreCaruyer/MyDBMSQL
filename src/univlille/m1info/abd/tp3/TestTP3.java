@@ -98,6 +98,32 @@ public class TestTP3 {
 	}
 	
 	@Test
+	public void testJoin() {
+		SimpleSGBD sgbd = new SimpleSGBD();
+		
+		List<String[]> actual = new ArrayList<>();
+		
+		List<String[]> expected = new ArrayList<>();
+		expected.add(new String[] { "a1", "b1", "c1" });
+		expected.add(new String[] { "a1", "b1", "c2" });
+		
+		// Create two relations
+		SimpleDBRelation relation1 = sgbd.createRelation("REL", "attrA", "attrB");
+		relation1.addTuple(new String[]{"a1", "b1"});
+		relation1.addTuple(new String[]{"a2", "b2"});
+		
+		SimpleDBRelation relation2 = sgbd.createRelation("RELTWO", "attrA", "attrC");
+		relation2.addTuple(new String[]{"a1", "c1"});
+		relation2.addTuple(new String[]{"a1", "c2"});
+		PhysicalOperator op = tp3.getOperator(getQuery_join_select_attrA_EQUAL_a1_from_REL_attrA_attrB_with_RELTWO_attrA_attrC(), sgbd);
+		
+		String[] tuple = null;
+		while((tuple = op.nextTuple()) != null)
+			actual.add(tuple);
+		assertTrue(containTheSameTuples(expected, actual));
+	}
+	
+	@Test
 	public void testCorrectSelection () {
 		
 		SimpleSGBD sgbd = new SimpleSGBD();

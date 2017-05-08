@@ -132,10 +132,8 @@ public class JoinOperator implements PhysicalOperator {
 				leftPageAddress = releaseOperatorPage(left, leftPageAddress);
 			}
 			
-			if(page.getNumberofTuple() == 0) {
-				mem.releasePage(page.getAddressPage(), false);
+			if(page.getNumberofTuple() == 0)
 				return -1;
-			}
 
 			mem.PutinMemory(page, page.getAddressPage());
 			mem.releasePage(page.getAddressPage(), false);

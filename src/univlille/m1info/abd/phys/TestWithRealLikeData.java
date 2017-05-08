@@ -26,7 +26,7 @@ public class TestWithRealLikeData {
 	public void setUp() {
 		tp6 = new TP6();
 		sgbd = tp6.getSgbd();
-		mem = sgbd.getMemoryManager();
+		mem = tp6.getMemoryManager();
 	}
 
 	private List<String[]> loadDataFromCSVFile (String fileName, char separator) throws IOException {
@@ -56,10 +56,9 @@ public class TestWithRealLikeData {
 		return rel;
 	}
 
-
 	@Test
 	public void testExample () throws IOException, NotEnoughMemoryException {
-		DefaultRelation relFilm = createRelationFromCSVFile("/tmp/vlille-realtime (1).csv", ',', "FILMS");
+		DefaultRelation relFilm = createRelationFromCSVFile("/tmp/vlille-realtime (1).csv", ';', "FILMS");
 		//DefaultRelation relPresident = createRelationFromCSVFile("/tmp/USPRESIDENT.csv", ',' , "PRESIDENTS");
 		
 		SequentialAccessOnARelationOperator tableOp = new SequentialAccessOnARelationOperator(relFilm, mem);

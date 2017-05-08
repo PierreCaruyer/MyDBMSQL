@@ -85,6 +85,10 @@ public class DefaultIndex implements Index{
 		}
 	}
 	
+	public void updateKeyValues(String key, List<Integer> values) {
+		
+	}
+	
 	public SchemawithMemory getSgbd() {
 		return sgbd;
 	}
