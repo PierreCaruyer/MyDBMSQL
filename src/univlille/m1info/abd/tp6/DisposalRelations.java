@@ -132,7 +132,7 @@ public class DisposalRelations {
 		return new JoinOperator(getLongRightTable(), getLongLeftTable(), mem);
 	}
 
-	public SequentialAccessOnARelationOperator getLeftModTable(MemoryManager mem) {
+	public SequentialAccessOnARelationOperator getLeftModTable(MemoryManager manager) {
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rb");
 		DefaultRelation rel = new DefaultRelation(schema, sgbd);
 
@@ -143,10 +143,10 @@ public class DisposalRelations {
 
 		rel.loadTuples(tuples);
 
-		return new SequentialAccessOnARelationOperator(rel, mem);
+		return new SequentialAccessOnARelationOperator(rel, manager);
 	}
 
-	public SequentialAccessOnARelationOperator getRightModTable(MemoryManager mem) {
+	public SequentialAccessOnARelationOperator getRightModTable(MemoryManager manager) {
 		RelationSchema schema = new DefaultRelationSchema("REL", "ra", "rc");
 		DefaultRelation rel = new DefaultRelation(schema, sgbd);
 
@@ -157,7 +157,7 @@ public class DisposalRelations {
 
 		rel.loadTuples(tuples);
 
-		return new SequentialAccessOnARelationOperator(rel, mem);
+		return new SequentialAccessOnARelationOperator(rel, manager);
 	}
 
 	public List<String[]> getExpectedResultJoinTuples() {
